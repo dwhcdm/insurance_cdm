@@ -1,0 +1,484 @@
+Below are5 realistic synthetic records** (fabricated) in a fact/event style. Each record contains multiple;every fact includes**: source_id, source_type, retrieved_at, published_at, license, confidence.
+json
+
+[
+  {
+    "record_id": "REC-0001",
+    "market": "EU-DE",
+    "subject": {
+      "subject_type": "company",
+      "entity_id": "DE-ENT-100001",
+      "name": "Nordhafen Logistik GmbH"
+    },
+    "facts": [
+      {
+        "fact_type": "corporate_registry.incorporation",
+        "value": {
+          "legal_name": "Nordhafen Logistik GmbH",
+          "entity_type": "GmbH",
+          "incorporation_date": "2017-04-18",
+          "registry_number": { "scheme": "HRB", "value": "918273", "authority": "AG Charlottenburg" },
+          "": "active"
+        },
+        "source_id": "SRC-DE-HR-001",
+        "source_type": "corporate_registry",
+        "retrieved_at": "2026-01-20T23:10:12Z",
+        "published_at": "2017-04-18",
+        "license": "synthetic-public-like",
+        "confidence": 0.93
+      },
+      {
+        "fact_type": "corporate_registry.director",
+        "value": {
+          "person_id": "DE-PER-200001",
+          "name": "Lena Hartwig",
+          "role": "Managing Director",
+          "start_date": "2021-02-01          "dob": "1984-09"
+               "source_id": "SRC-DE-HR-002",
+        "source_type": "registries_filings",
+        "retrieved_at": "2026-01-20T23:10:12Z",
+        "published_at": "2021-02-01",
+        "license": "synthetic-public-like",
+ "confidence": 0.88
+      },
+      {
+        "fact_type": "ubo_register.ubo",
+        "value": {
+          "ubo_person_id": "DE-PER-200003",
+          "ubo_name": "Jonas Re",
+          "ubo_basis": "ownership",
+          "ownership_pct": 30.0,
+          "threshold": ">=25%",
+          "as_of": "2024-12-31",
+          "dob": "1979-02-??",
+          "nationality": ["DE"]
+        },
+        "source_id": "SRC-DE-UBO-001",
+        "source_type": "ubo_register",
+        "retrieved_at": "2026-01-18T09:05:44Z",
+        "published_at": "2025-01-10",
+        "license": "synthetic-restricted-like",
+        "confidence": 0.74
+      },
+      {
+        "fact_type": "sec_like_filing.annual_report",
+        "value": {
+          "filing_system": "DE-Exchange-Disclosure (modeled)",
+          "form_type": "Annual Report (10-K-like)",
+          "filing_id": "DE-AR-2024-00991",
+         period_end": "2023-12-31",
+          "filed_date":2024-09-30",
+          "highlights": {
+            "revenue_eur": 48200000,
+            "employees": 214,
+            "auditor": "Küsten & Partner WP (synthetic)"
+          }
+        },
+ "source_id": "SRC-DE-DISC-010",
+        "source": "sec_like_filings",
+        "retrieved_at": "2026-01-19T14:22:01Z",
+        "published_at": "2024-09-30",
+        "license": "synthetic-public-like",
+        "confidence": 0.67
+      },
+      {
+        "fact_type": "geospatial.address_normalization",
+        "value": {
+          "address_raw": "Kaiserdamm 12, 14057 Berlin          "address_normalized": {
+            "street": "Kaiserdamm 12",
+            "postal_code": "14057",
+            "city": "Berlin",
+            "region": "BE",
+            "country": "DE"
+          },
+          "geo": { "lat": 52.5098, "lon": 13.2796 },
+          "dq_notes": ["input had minor variance across sources"]
+        },
+        "source_id": "SRC-REF-ADDR-001",
+        "_type": "address_reference",
+        "retrieved_at": "2026-01-20T23:12:00Z",
+        "published_at": "2026-01-01",
+        "license": "synthetic-internal",
+        "confidence": 0.91
+      }
+    ]
+  },
+
+  {
+    "record_id": "REC-0002",
+    "market": "ME-UAE",
+    "subject": {
+      "subject_type": "company",
+      "entity_id": "AE-ENT-300001",
+      "name": "Al Noor Technical Services L.L.C"
+    },
+    "": [
+      {
+        "fact_type": "corporate_registry.incorporation",
+        "value": {
+          "legal_name": "Al Noor Technical Services L.L.C",
+          "legal_name_ar": "شركة النور للخدمات الفنية ذ.م.م",
+          "entity_type": "LLC",
+          "incorporation_date "2019-05-27",
+          "license_number": "LIC-DXB-778899",
+          "registry_number": { "scheme": "DED", "value": "DED-DXB-112233" },
+          "status": "active"
+        },
+        "source_id": "SRC-AE-DED-001",
+        "source_type": "corporate_registry",
+        "retrieved_at": "2026-01-20T22:40:02Z",
+        "published_at": "2019-05-27",
+        "license": "synthetic-public-like",
+        "confidence": 0.9
+      },
+      {
+        "fact_type":ubo_register.ubo",
+        "value": {
+          "ubo_person_id": "AE-PER-400003",
+          "ubo_name": "Khalifa Rashid Al Nuaimi",
+          "ownership_pct": 51.0,
+ "as_of": "202-05-27",
+          "ubo_basis": "direct_shareholding",
+          "id_numbers": [{ "scheme": "EID", "value "784-2-XXXXXXX-X", "masked": true }]
+        },
+        "source_id": "SRC-AE-UBO-009",
+        "source_type": "ubo_register",
+        "retrieved_at": "2026-01-17T1102:19Z",
+        "published_at": "2025-06-01",
+        "license": "synthetic-restricted-like",
+        "confidence": 0.62
+      },
+      {
+        "fact_type": "open_web.company_website_contact",
+        "value": {
+          "url": "https://alnoor-tech.example/contact",
+          "emails": ["admin@alnoor-tech.example", "sales@alnoor-tech.example"],
+          "phones": ["+971 4 555 0101"],
+          "address_on_site": "Al Safa Tower, Sheikh Zayed Road, Dubai, UAE",
+          "dq_notes": ["website lists only PO in footer on some pages"]
+        },
+        "source_id": "SRC-WEB-CRAWL-100",
+        "source": "company_website",
+        "retrieved_at": "2026-01-16T06:33:40Z",
+        "published_at": "2025-12-05",
+        "license": "synthetic-open-web-like",
+        "confidence": 0.79
+      },
+      {
+        "fact_type": "watchlists.pep",
+        "value":          "pep_subject": "Khalifa Rashid Al Nuaimi",
+          "pep_type": "family_member_of_senior_official (modeled)",
+          "country": "AE",
+          "position_or_association": " of a senior municipal official (synthetic)",
+          "from_date": "2020-01-01",
+          "to_date": null
+        },
+        "source_id": "SRC-PEP-AGG-055",
+        "source_type": "pep_list",
+        "retrieved_at": "2026-01-18T03:11:09Z",
+        "published_at": "2024-08-12",
+        "license": "synthetic-commercial-like",
+        "confidence": 0.55
+ },
+      {
+        "fact_type": "geospatial.country_reference",
+        "value": {
+          "country_name": "United Arab Emirates",
+          "iso": "AE",
+          "iso3": "ARE",
+          "region": "Middle East",
+          "subregion": "Western Asia"
+        },
+        "source_id": "SRC-REF-ISO-001",
+        "source_type": "country_reference",
+        "retrieved_at": "202-01-20T00:00:10Z",
+        "published_at": "2025-11-01",
+        "license": "synthetic-internal",
+ "confidence": 0.99
+         ]
+  },
+
+  {
+    "record_id": "REC-0003",
+    "market": "EU-GB",
+    "subject": {
+      "subject_type": "person",
+      "person_id": "GB-PER-700001",
+      "name": "Oleg Viktorovich Sokolov"
+    },
+    "facts": [
+      {
+        "fact_type": "sanctions.designation",
+ "value": {
+          "authority": "UK-OFSI (modeled)",
+          "regime": "Russia (modeled)",
+         program": "Asset Freeze",
+          "listed_name": "Oleg Viktorovich Sokolov",
+          "aliases": ["Oleg V. Sokolov", "Олег Викторович Соколов"],
+          "dob": ["1971-10-03", "1971-10"],
+          "nationality": [""],
+          "addresses": ["Moscow, Russian Federation"],
+          "identifiers": [{ "type": "passport", "value": "72XXXXXXX", "masked": true }],
+          "listing_date": "2023-06-14"
+        },
+        "source_id": "SRC-UK-OFSI-CL-202601",
+        "source_type": "sanctions_list",
+        "retrieved_at": "2026-01-20T08:12:55Z",
+        "published_at": "2023-06-14",
+        "license": "synthetic-public-like",
+        "confidence": 0.95
+      },
+      {
+        "fact_type": "sanctions.cross_list_link",
+        "value": {
+          "linked_authorities": ["EU (modeled)"],
+          "link_reason": "same name + DOB month/year + alias set",
+          "match_score": 0.86,
+          "dq_notes": ["EU record has different transliteration ofymic"]
+        },
+        "source_id": "SRC-ER-LINK-001",
+        "source_type": "watchlists_risk",
+        "retrieved_at": "202-01-20T08:13:10Z",
+        "published_at": "2026-01-20",
+        "license": "synthetic-internal",
+        "confidence": 0.78
+      },
+      {
+        "fact_type": "export_control.denied_party",
+        "value": {
+          "authority": "US-BIS Entity List (modeled)",
+          "subject_type": "person",
+          "name": "Oleg Viktorovich Sokolov",
+          "reason": "export control restrictions (modeled)",
+          "effective_date": "2024-02-01"
+        },
+        "source_id": "SRC-US-BIS-EL-202402",
+        "source_type": "export_control_denied_parties",
+        "retrieved_at": "2026-01-19T18:01:00Z",
+        "published_at": "2024-02-01",
+        "license": "synthetic-public-like",
+        "confidence": 0.84
+      },
+      {
+        "fact_type": "open_web.adverse_media",
+        "value": {
+          "article_id": "NEWS-2025-11991",
+          "publisher": "Baltic Ledger (synthetic)",
+          "title": "UK adds logistics intermediary linked to procurement network to sanctions list",
+          "published_date": "2025-03-22",
+          "entities_mentioned": ["Oleg Viktorovich Sokolov", "North Quay Trading LLP (synthetic)"],
+          "summary": "Article discusses alleged facilitation of restricted goods procurement; no conviction reported.",
+          "sentiment": "negative",
+          "dq_notes": ["name appears as 'Oleg Sokoloff' in body text"]
+        },
+        "source_id": "SRC-NEWS-FED-77",
+        "source_type": "news_adverse_media",
+        "retrieved_at": "2026-01-18T05:44:21Z",
+        "published_at": "2025-03-22",
+        "license": "synthetic-open-web-like",
+        "confidence": 0.6
+      }
+    ]
+  },
+
+  {
+    "record_id": "REC-0004",
+    "market": "EU-DE",
+    "subject": {
+      "subject_type": "company",
+      "entity_id": "DE-ENT-100010",
+      "name": "Rheinblick Energieanlagen AG"
+    },
+    "facts": [
+      {
+        "fact_type": "corporate_registry.incorporation",
+        "value": {
+          "legal_name": "Rheinblick Energieanlagen AG",
+          "entity_type": "AG",
+          "incorporation_date": "2012-09-07",
+          "registry_number": { "scheme": "HRB", "value": "221144", "authority": "AG Frankfurt am Main" },
+          "status": "insolvency_proceedings"
+        },
+        "source_id": "SRC-DE-HR-AG-221144",
+        "source_type": "corporate_registry",
+        "retrieved_at": "2026-01-20T21:02:00Z",
+        "published_at": "2012-09-07",
+        "license": "synthetic-public-like",
+        "confidence": 0.92
+      },
+      {
+        "fact_type": "court_record.bankruptcy",
+        "value": {
+          "court": "Amtsgericht Frankfurt am Main (Insolvenzgericht)",
+          "case_number": "3 IN 44/24 (synthetic)",
+          "case_type": "Insolvency",
+          "filing_date": "2024-04-11",
+          "status": "opened",
+          "administrator": "Dr. Petraenz (synthetic)",
+          "dq_notes": ["administrator name appears without title in one extract"]
+        },
+        "_id": "SRC-DE-COURTINS-04424",
+        "source_type": "court_records",
+        "retrieved_at": "2026-01-19T10:20:33Z",
+        "published_at": "2024-04-11",
+        "license": "synthetic-public-like",
+        "confidence": 0.83
+      },
+      {
+        "fact_type": "sec_like_filing.beneficial_ownership_form",
+        "value": {
+          "filing_system": "EU-Market-Disclosure (modeled)",
+          "form_type": "Major Holdings Notification (13D-like)",
+          "filing_id": "EU-MDN-2023-7712",
+          "issuer": "Rheinblick Energieanlagen AG",
+          "reporting_owner": "Helios Capital Partners.à r.l.synthetic)",
+          "ownership_pct": 12.4,
+          "event_date": "2023-11-02",
+          "filed_date": "2023-11-06"
+        },
+        "source_id": "SRC-EU-DISC-MDN-7712",
+        "source_type": "sec_like_filings",
+        "retrieved_at": "2026-01-18T1211:59Z",
+        "published_at": "2023-11-06",
+        "license": "synthetic-public-like",
+        "confidence": 0.7
+      },
+      {
+        "fact_type": "open_web.leaks.mention",
+        "value": {
+          "leak_dataset": "OffshoreFiles-2016 (modeled)",
+          "leak_record_id": "LEAK-2016-883201",
+          "name_in_leak": "Helios Capital Partners Sarl",
+          "jurisdiction": "LU",
+          "role": "shareholder (modeled)",
+          "linked_to": "Helios Capital Partners S.à r.l. (synthetic)",
+          "dq_notes": ["diacritics missing (Sàrl vs S.à r.l.)"]
+        },
+        "source_id": "SRC-LEAKS-2016-OF",
+        "source_type": "leaks_dataset",
+        "retrieved_at": "2026--17T00:30:00Z",
+        "published_at": "2016-05-09",
+        "license": "synthetic-research-like",
+        "confidence": 0.52
+      },
+      {
+        "fact_type": "geospatial.identifier_reference",
+        "value": {
+          "lei_like": "529900SYNTHRHEINBLICK10",
+          "isin_like": "DE000SYNTHAG10",
+          "dq_notes":ISIN-like is synthetic; not validated against real check digit rules"]
+        },
+        "source_id": "SRC-REF-ID-002",
+        "source_type": "identifier_reference",
+        "retrieved_at": "2026-01-20T00:00:10Z",
+        "published_at": "2026-01-01",
+        "license "synthetic-internal",
+        "confidence": 0.9
+      }
+    ]
+  },
+
+  {
+    "record_id": "REC-0005",
+    "market": "ME-UAE",
+    "subject": {
+      "subject_type": "company",
+      "entity_id": "AE-ENT-300020",
+      "name": "Crescent Bay Holdings FZLLC"
+    },
+    "facts": [
+      {
+        "fact_type": "corporate_registry.incorporation",
+        "value": {
+          "legal_name": "Crescent Bay Holdings FZ-LLC",
+          "entity_type": "FZ-LLC",
+          "incorporation_date": "2018-11-14",
+          "license_number": "LIC-RAK-334455",
+          "registry_number": { "scheme": "FZ", "value": "FZ-RAK-556677", "authority": "RAKEZ (modeled)" },
+          "status": "active"
+        },
+        "source_id": "SRC-AE-FZ-RAK-556677",
+        "source_type": "corporate_registry",
+        "retrieved_at": "2026-01-20T22:40:02Z",
+        "published_at": "2018-11-14",
+        "license": "synthetic-public-like",
+        "confidence": 0.89
+      },
+      {
+        "fact_type": "ubo_register.ubo",
+        "value": {
+          "ubo_entity_id": "CY-ENT-900001",
+          "ubo_name "Aegean Meridian Investments Ltd.",
+          "ubo_basis": "ownership_chain",
+          "ownership_pct": 100.0,
+          "as_of": "2025-11-14",
+          "dq_notes": ["UBO register lists only legal owner entity; natural person UBO not disclosed in extract"]
+        },
+        "source_id": "SRC-AE-UBO-012",
+        "source_type": "ubo_register",
+        "retrieved_at": "2026-01-17T11:02:19Z",
+        "published_at": "2025-12-01",
+        "license "synthetic-restricted-like",
+        "confidence": 0.58
+      },
+ {
+        "fact_type": "law_en.wanted_notice",
+        "value": {
+          "authority": "Regional Economic Crime Unitmodeled         notice_id": "WANTED-2025-771",
+          "subject_name": "Nabil Haddad",
+          "subject_type": "person",
+          "": "fraud investigation (modeled)",
+          "status": "active",
+          "last_seen": "Ras Al Khaimah, AE",
+          "dq_notes": ["notice lists 'N Hadad' spelling variant"]
+        },
+        "source_id": "SRC-LE-WANTED-REG-771",
+        "source_type": "law_enforcement_wanted",
+        "retrieved_at": "2026-01-15T19:20:10Z",
+        "published_at": "2025-09-03",
+        "": "synthetic-public-like",
+        "confidence": 0.44
+      },
+      {
+        "fact_type": "sanctions.screening_result",
+        "value": {
+          "screened_name": "Crescent Bay Holdings FZ-LLC",
+          "result": "no_direct_match",
+          "potential_false_positive": {
+            "matched_name": "Crescent Bay Holding LLC",
+            "authority": "OFAC (led)",
+            "_score": 0.71,
+            "resolution": "rejected",
+            "reason": "different jurisdiction + different identifiers"
+          }
+        },
+        "source_id": "SRC-SCREEN-ENGINE-009",
+        "source_type": "watchlists_risk",
+        "retrieved_at": "2026-01-20T22:55:00Z",
+        "_at": "2026-01-20",
+        "license": "synthetic-internal",
+        "confidence": 0.81
+      },
+      {
+        "fact_type": "open_web.adverse_media",
+ "value": {
+          "article_id": "NEWS-2024-02",
+          "publisher": "Gulf Business Monitor (synthetic)",
+          "title": "Free-zone holding firms face scrutiny over nominee arrangements",
+          "published_date": "2024-10-08",
+          "entities_mentioned": ["Crescent Bay Holdings FZ-LLC"],
+          "summary": "Explainer article referencing compliance concerns; no allegation of wrongdoing against named firm.",
+          "sentiment": "neutral_negative"
+        },
+        "source_id": "SRC-NEWS-FEED-12",
+        "source_type": "news_adverse_media",
+       retrieved_at": "2026-01-18T05:44:21Z",
+        "published_at": "2024-10-08",
+        "license": "synthetic-open-web-like",
+        "confidence": 0.57
+      }
+    ]
+  }
+]
+``If you want, I can also output the same 5 records as **JSONL** and/or split into **tables** (`entities`, `persons`, ``, `sources`, `relationships`) to better match an ingestion pipeline.
+
