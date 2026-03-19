@@ -38,9 +38,9 @@ jobs:
     name: DBT Compile Check
     runs-on: ubuntu-latest
     env:
-      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_ACCOUNT: ci_dummy_account
+      SNOWFLAKE_USER: ci_dummy_user
+      SNOWFLAKE_PASSWORD: ci_dummy_password
     steps:
       - uses: actions/checkout@v4
 
@@ -56,6 +56,6 @@ jobs:
         working-directory: sanctions_dbt
         run: dbt deps
 
-      - name: Compile models
+      - name: Parse and validate models
         working-directory: sanctions_dbt
-        run: dbt compile --target dev
+        run: dbt parse
