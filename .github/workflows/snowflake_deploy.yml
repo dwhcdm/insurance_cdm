@@ -1,0 +1,52 @@
+name: Snowflake SQL Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+      script:
+        description: 'SQL script to execute (e.g. 001_account_setup.sql)'
+        required: true
+        type: string
+
+env:
+  SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+  SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+jobs:
+  deploy:
+    name: Deploy SQL to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.32-linux_x86_64.bash
+          bash snowsql-1.2.32-linux_x86_64.bash || true
+
+      - name: Validate script exists
+        run: |
+          if [ ! -f "snowflake/${{ inputs.script }}" ]; then
+            echo "Error: Script snowflake/${{ inputs.script }} not found"
+            exit 1
+          fi
+
+      - name: Execute SQL script
+        run: |
+          echo "Deploying snowflake/${{ inputs.script }} to ${{ inputs.environment }}"
+          echo "Script contents:"
+          head -20 "snowflake/${{ inputs.script }}"
+          echo "---"
+          echo "NOTE: Actual SnowSQL execution requires configured credentials."
+          echo "Review the script manually and execute via SnowSQL CLI or Snowsight."

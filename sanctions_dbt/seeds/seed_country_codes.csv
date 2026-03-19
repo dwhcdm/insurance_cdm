@@ -1,0 +1,77 @@
+country_code,country_name,region,sub_region,is_high_risk,is_sanctioned_jurisdiction
+US,United States,Americas,Northern America,FALSE,FALSE
+GB,United Kingdom,Europe,Northern Europe,FALSE,FALSE
+DE,Germany,Europe,Western Europe,FALSE,FALSE
+FR,France,Europe,Western Europe,FALSE,FALSE
+JP,Japan,Asia,Eastern Asia,FALSE,FALSE
+CN,China,Asia,Eastern Asia,FALSE,FALSE
+SG,Singapore,Asia,South-Eastern Asia,FALSE,FALSE
+AE,United Arab Emirates,Asia,Western Asia,FALSE,FALSE
+CH,Switzerland,Europe,Western Europe,FALSE,FALSE
+NL,Netherlands,Europe,Western Europe,FALSE,FALSE
+NO,Norway,Europe,Northern Europe,FALSE,FALSE
+BR,Brazil,Americas,South America,FALSE,FALSE
+IN,India,Asia,Southern Asia,FALSE,FALSE
+KR,South Korea,Asia,Eastern Asia,FALSE,FALSE
+AU,Australia,Oceania,Australia and New Zealand,FALSE,FALSE
+CA,Canada,Americas,Northern America,FALSE,FALSE
+SA,Saudi Arabia,Asia,Western Asia,FALSE,FALSE
+QA,Qatar,Asia,Western Asia,FALSE,FALSE
+KW,Kuwait,Asia,Western Asia,FALSE,FALSE
+OM,Oman,Asia,Western Asia,FALSE,FALSE
+MY,Malaysia,Asia,South-Eastern Asia,FALSE,FALSE
+TH,Thailand,Asia,South-Eastern Asia,FALSE,FALSE
+ID,Indonesia,Asia,South-Eastern Asia,FALSE,FALSE
+TR,Turkey,Asia,Western Asia,TRUE,FALSE
+ZA,South Africa,Africa,Southern Africa,FALSE,FALSE
+NG,Nigeria,Africa,Western Africa,TRUE,FALSE
+EG,Egypt,Africa,Northern Africa,FALSE,FALSE
+RU,Russia,Europe,Eastern Europe,TRUE,TRUE
+IR,Iran,Asia,Southern Asia,TRUE,TRUE
+KP,North Korea,Asia,Eastern Asia,TRUE,TRUE
+SY,Syria,Asia,Western Asia,TRUE,TRUE
+CU,Cuba,Americas,Caribbean,TRUE,TRUE
+VE,Venezuela,Americas,South America,TRUE,TRUE
+BY,Belarus,Europe,Eastern Europe,TRUE,TRUE
+MM,Myanmar,Asia,South-Eastern Asia,TRUE,TRUE
+SD,Sudan,Africa,Northern Africa,TRUE,TRUE
+SO,Somalia,Africa,Eastern Africa,TRUE,FALSE
+YE,Yemen,Asia,Western Asia,TRUE,FALSE
+LB,Lebanon,Asia,Western Asia,TRUE,FALSE
+LY,Libya,Africa,Northern Africa,TRUE,TRUE
+PA,Panama,Americas,Central America,FALSE,FALSE
+LR,Liberia,Africa,Western Africa,FALSE,FALSE
+MH,Marshall Islands,Oceania,Micronesia,FALSE,FALSE
+HK,Hong Kong,Asia,Eastern Asia,FALSE,FALSE
+MT,Malta,Europe,Southern Europe,FALSE,FALSE
+CY,Cyprus,Asia,Western Asia,FALSE,FALSE
+BM,Bermuda,Americas,Northern America,FALSE,FALSE
+BS,Bahamas,Americas,Caribbean,FALSE,FALSE
+GR,Greece,Europe,Southern Europe,FALSE,FALSE
+IT,Italy,Europe,Southern Europe,FALSE,FALSE
+ES,Spain,Europe,Southern Europe,FALSE,FALSE
+SE,Sweden,Europe,Northern Europe,FALSE,FALSE
+DK,Denmark,Europe,Northern Europe,FALSE,FALSE
+FI,Finland,Europe,Northern Europe,FALSE,FALSE
+PL,Poland,Europe,Eastern Europe,FALSE,FALSE
+AT,Austria,Europe,Western Europe,FALSE,FALSE
+BE,Belgium,Europe,Western Europe,FALSE,FALSE
+IE,Ireland,Europe,Northern Europe,FALSE,FALSE
+PT,Portugal,Europe,Southern Europe,FALSE,FALSE
+MX,Mexico,Americas,Central America,FALSE,FALSE
+AR,Argentina,Americas,South America,FALSE,FALSE
+CL,Chile,Americas,South America,FALSE,FALSE
+CO,Colombia,Americas,South America,FALSE,FALSE
+PE,Peru,Americas,South America,FALSE,FALSE
+PH,Philippines,Asia,South-Eastern Asia,FALSE,FALSE
+VN,Vietnam,Asia,South-Eastern Asia,FALSE,FALSE
+BD,Bangladesh,Asia,Southern Asia,FALSE,FALSE
+PK,Pakistan,Asia,Southern Asia,TRUE,FALSE
+IQ,Iraq,Asia,Western Asia,TRUE,FALSE
+AF,Afghanistan,Asia,Southern Asia,TRUE,FALSE
+UA,Ukraine,Europe,Eastern Europe,FALSE,FALSE
+GE,Georgia,Asia,Western Asia,FALSE,FALSE
+KZ,Kazakhstan,Asia,Central Asia,FALSE,FALSE
+UZ,Uzbekistan,Asia,Central Asia,FALSE,FALSE
+TM,Turkmenistan,Asia,Central Asia,FALSE,FALSE
+AZ,Azerbaijan,Asia,Western Asia,FALSE,FALSE

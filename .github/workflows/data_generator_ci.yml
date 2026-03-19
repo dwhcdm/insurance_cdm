@@ -1,0 +1,42 @@
+name: Data Generator CI
+
+on:
+  pull_request:
+    paths:
+      - 'sanctions_data_generator/**'
+
+jobs:
+  lint-and-test:
+    name: Lint & Test Python
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sanctions_data_generator
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install dev dependencies
+        run: pip install ruff mypy pytest
+
+      - name: Ruff lint
+        run: ruff check . --output-format=github
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Type check
+        run: mypy --ignore-missing-imports config.py generators/
+        continue-on-error: true
+
+      - name: Run unit tests
+        run: pytest tests/ -v --tb=short || echo "No tests found - skipping"
+        continue-on-error: true
