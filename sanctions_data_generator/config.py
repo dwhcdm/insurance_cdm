@@ -20,14 +20,14 @@ class SnowflakeConfig:
         default_factory=lambda: os.getenv("SNOWFLAKE_ROLE", "SANCTIONS_DATA_ENGINEER")
     )
     warehouse: str = field(
-        default_factory=lambda: os.getenv("SNOWFLAKE_WAREHOUSE", "SANCTIONS_LOADING_WH_M")
+        default_factory=lambda: os.getenv(
+            "SNOWFLAKE_WAREHOUSE", "SANCTIONS_LOADING_WH_M"
+        )
     )
     database: str = field(
         default_factory=lambda: os.getenv("SNOWFLAKE_DATABASE", "SANCTIONS_DEV")
     )
-    schema: str = field(
-        default_factory=lambda: os.getenv("SNOWFLAKE_SCHEMA", "RAW")
-    )
+    schema: str = field(default_factory=lambda: os.getenv("SNOWFLAKE_SCHEMA", "RAW"))
 
 
 @dataclass
@@ -82,24 +82,66 @@ class IssueInjectionConfig:
 class SanctionsConfig:
     """Reference data for sanctions screening simulation."""
 
-    SANCTIONS_LISTS: list = field(default_factory=lambda: [
-        "OFAC_SDN", "OFAC_CONS", "EU_SANCTIONS", "UN_SANCTIONS",
-        "UK_SANCTIONS", "OFAC_SSI", "BIS_ENTITY", "BIS_DENIED",
-    ])
+    SANCTIONS_LISTS: list = field(
+        default_factory=lambda: [
+            "OFAC_SDN",
+            "OFAC_CONS",
+            "EU_SANCTIONS",
+            "UN_SANCTIONS",
+            "UK_SANCTIONS",
+            "OFAC_SSI",
+            "BIS_ENTITY",
+            "BIS_DENIED",
+        ]
+    )
 
-    SANCTIONS_PROGRAMS: list = field(default_factory=lambda: [
-        "IRAN", "NORTH_KOREA", "RUSSIA", "SYRIA", "CUBA",
-        "VENEZUELA", "BELARUS", "MYANMAR", "SUDAN", "SOMALIA",
-        "YEMEN", "LIBYA", "LEBANON", "IRAQ", "AFGHANISTAN",
-    ])
+    SANCTIONS_PROGRAMS: list = field(
+        default_factory=lambda: [
+            "IRAN",
+            "NORTH_KOREA",
+            "RUSSIA",
+            "SYRIA",
+            "CUBA",
+            "VENEZUELA",
+            "BELARUS",
+            "MYANMAR",
+            "SUDAN",
+            "SOMALIA",
+            "YEMEN",
+            "LIBYA",
+            "LEBANON",
+            "IRAQ",
+            "AFGHANISTAN",
+        ]
+    )
 
-    HIGH_RISK_COUNTRIES: list = field(default_factory=lambda: [
-        "IR", "KP", "SY", "CU", "VE", "BY", "MM", "SD", "RU",
-    ])
+    HIGH_RISK_COUNTRIES: list = field(
+        default_factory=lambda: [
+            "IR",
+            "KP",
+            "SY",
+            "CU",
+            "VE",
+            "BY",
+            "MM",
+            "SD",
+            "RU",
+        ]
+    )
 
-    ELEVATED_RISK_COUNTRIES: list = field(default_factory=lambda: [
-        "SO", "YE", "LB", "LY", "IQ", "AF", "PK", "NG", "TR",
-    ])
+    ELEVATED_RISK_COUNTRIES: list = field(
+        default_factory=lambda: [
+            "SO",
+            "YE",
+            "LB",
+            "LY",
+            "IQ",
+            "AF",
+            "PK",
+            "NG",
+            "TR",
+        ]
+    )
 
     # Match score distribution parameters
     EXACT_MATCH_PERCENTAGE: float = 0.02
@@ -111,40 +153,66 @@ class SanctionsConfig:
 class CommodityConfig:
     """Reference data for commodity trading simulation."""
 
-    COMMODITIES: dict = field(default_factory=lambda: {
-        "CRUDE_OIL": [
-            ("CRD_BRT", "Brent Crude"), ("CRD_WTI", "WTI Crude"),
-            ("CRD_DUB", "Dubai Crude"), ("CRD_URAL", "Urals Crude"),
-            ("CRD_MURB", "Murban Crude"),
-        ],
-        "REFINED_PRODUCTS": [
-            ("PRD_ULSD", "Ultra Low Sulphur Diesel"), ("PRD_JET", "Jet Fuel A1"),
-            ("PRD_MOGAS", "Motor Gasoline"), ("PRD_NAPH", "Naphtha"),
-            ("PRD_FUEL", "Fuel Oil 380cst"), ("PRD_VLSFO", "VLSFO 0.5%"),
-        ],
-        "LNG": [
-            ("LNG_SPOT", "LNG Spot"), ("LNG_JKM", "LNG JKM"),
-            ("LNG_NBP", "LNG NBP"),
-        ],
-        "METALS": [
-            ("MET_ALUM", "Aluminium"), ("MET_COPP", "Copper"),
-            ("MET_NICK", "Nickel"), ("MET_ZINC", "Zinc"),
-            ("MET_IRON", "Iron Ore"),
-        ],
-        "AGRICULTURE": [
-            ("AGR_WHEAT", "Wheat"), ("AGR_CORN", "Corn/Maize"),
-            ("AGR_SOYB", "Soybeans"), ("AGR_PALM", "Palm Oil"),
-            ("AGR_SUGAR", "Raw Sugar"),
-        ],
-    })
+    COMMODITIES: dict = field(
+        default_factory=lambda: {
+            "CRUDE_OIL": [
+                ("CRD_BRT", "Brent Crude"),
+                ("CRD_WTI", "WTI Crude"),
+                ("CRD_DUB", "Dubai Crude"),
+                ("CRD_URAL", "Urals Crude"),
+                ("CRD_MURB", "Murban Crude"),
+            ],
+            "REFINED_PRODUCTS": [
+                ("PRD_ULSD", "Ultra Low Sulphur Diesel"),
+                ("PRD_JET", "Jet Fuel A1"),
+                ("PRD_MOGAS", "Motor Gasoline"),
+                ("PRD_NAPH", "Naphtha"),
+                ("PRD_FUEL", "Fuel Oil 380cst"),
+                ("PRD_VLSFO", "VLSFO 0.5%"),
+            ],
+            "LNG": [
+                ("LNG_SPOT", "LNG Spot"),
+                ("LNG_JKM", "LNG JKM"),
+                ("LNG_NBP", "LNG NBP"),
+            ],
+            "METALS": [
+                ("MET_ALUM", "Aluminium"),
+                ("MET_COPP", "Copper"),
+                ("MET_NICK", "Nickel"),
+                ("MET_ZINC", "Zinc"),
+                ("MET_IRON", "Iron Ore"),
+            ],
+            "AGRICULTURE": [
+                ("AGR_WHEAT", "Wheat"),
+                ("AGR_CORN", "Corn/Maize"),
+                ("AGR_SOYB", "Soybeans"),
+                ("AGR_PALM", "Palm Oil"),
+                ("AGR_SUGAR", "Raw Sugar"),
+            ],
+        }
+    )
 
-    INCOTERMS: list = field(default_factory=lambda: [
-        "FOB", "CIF", "CFR", "DES", "DAP", "FAS", "EXW",
-    ])
+    INCOTERMS: list = field(
+        default_factory=lambda: [
+            "FOB",
+            "CIF",
+            "CFR",
+            "DES",
+            "DAP",
+            "FAS",
+            "EXW",
+        ]
+    )
 
-    TRADE_TYPES: list = field(default_factory=lambda: [
-        "PHYSICAL", "PAPER", "SWAP", "OPTION", "FUTURE",
-    ])
+    TRADE_TYPES: list = field(
+        default_factory=lambda: [
+            "PHYSICAL",
+            "PAPER",
+            "SWAP",
+            "OPTION",
+            "FUTURE",
+        ]
+    )
 
 
 # Module-level singleton instances

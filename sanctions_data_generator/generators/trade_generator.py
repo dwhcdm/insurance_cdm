@@ -34,38 +34,87 @@ class TradeGenerator(BaseGenerator):
     """Generate commodity trade transactions at scale (2.5M/day target)."""
 
     BOOKING_ENTITIES = [
-        "PRISM_TRADING_AG", "PRISM_COMMODITIES_PTE",
-        "PRISM_ENERGY_LLC", "PRISM_METALS_BV",
-        "PRISM_AGRI_SA", "PRISM_LNG_LTD",
+        "PRISM_TRADING_AG",
+        "PRISM_COMMODITIES_PTE",
+        "PRISM_ENERGY_LLC",
+        "PRISM_METALS_BV",
+        "PRISM_AGRI_SA",
+        "PRISM_LNG_LTD",
     ]
 
     DESKS = [
-        "CRUDE_DESK", "PRODUCTS_DESK", "LNG_DESK",
-        "METALS_DESK", "AGRI_DESK", "STRUCTURED_DESK",
+        "CRUDE_DESK",
+        "PRODUCTS_DESK",
+        "LNG_DESK",
+        "METALS_DESK",
+        "AGRI_DESK",
+        "STRUCTURED_DESK",
     ]
 
     COUNTRIES = [
-        "US", "GB", "DE", "FR", "SG", "AE", "NL", "CH",
-        "NO", "JP", "CN", "KR", "IN", "BR", "AU", "SA",
-        "QA", "KW", "OM", "MY", "ZA", "NG", "EG", "TR",
-        "RU", "IR", "KP", "VE",
+        "US",
+        "GB",
+        "DE",
+        "FR",
+        "SG",
+        "AE",
+        "NL",
+        "CH",
+        "NO",
+        "JP",
+        "CN",
+        "KR",
+        "IN",
+        "BR",
+        "AU",
+        "SA",
+        "QA",
+        "KW",
+        "OM",
+        "MY",
+        "ZA",
+        "NG",
+        "EG",
+        "TR",
+        "RU",
+        "IR",
+        "KP",
+        "VE",
     ]
 
     HIGH_RISK = set(sanctions_config.HIGH_RISK_COUNTRIES)
 
     PORTS = [
-        "SINGAPORE", "ROTTERDAM", "HOUSTON", "FUJAIRAH",
-        "SHANGHAI", "BUSAN", "JEBEL_ALI", "MUMBAI",
-        "SANTOS", "DURBAN", "BANDAR_ABBAS", "NOVOROSSIYSK",
-        "PRIMORSK", "RICHARDS_BAY", "DAMPIER", "PORT_HEDLAND",
+        "SINGAPORE",
+        "ROTTERDAM",
+        "HOUSTON",
+        "FUJAIRAH",
+        "SHANGHAI",
+        "BUSAN",
+        "JEBEL_ALI",
+        "MUMBAI",
+        "SANTOS",
+        "DURBAN",
+        "BANDAR_ABBAS",
+        "NOVOROSSIYSK",
+        "PRIMORSK",
+        "RICHARDS_BAY",
+        "DAMPIER",
+        "PORT_HEDLAND",
         "NEW_ORLEANS",
     ]
 
-    def __init__(self, seed: int = 42, counterparty_ids: list = None,
-                 vessel_ids: list = None,
-                 issue_rates: IssueInjectionRates | None = None):
+    def __init__(
+        self,
+        seed: int = 42,
+        counterparty_ids: list = None,
+        vessel_ids: list = None,
+        issue_rates: IssueInjectionRates | None = None,
+    ):
         super().__init__(seed)
-        self.counterparty_ids = counterparty_ids or [f"CP{i:010d}" for i in range(5_000_000)]
+        self.counterparty_ids = counterparty_ids or [
+            f"CP{i:010d}" for i in range(5_000_000)
+        ]
         self.vessel_ids = vessel_ids or [f"VS{i:010d}" for i in range(500_000)]
         self.injector = DataQualityIssueInjector(issue_rates, seed)
         self.scenario_gen = SanctionsScenarioGenerator(seed)
@@ -76,7 +125,9 @@ class TradeGenerator(BaseGenerator):
             for code, name in items:
                 self.all_commodities.append((code, name, group))
 
-    def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
+    def generate_batch(
+        self, batch_size: int, batch_offset: int = 0, **kwargs
+    ) -> pd.DataFrame:
         """Generate a batch of trade transaction records with production-grade issues."""
         trade_date = kwargs.get("trade_date", datetime.now().date())
 
@@ -84,7 +135,9 @@ class TradeGenerator(BaseGenerator):
         for i in range(batch_size):
             idx = batch_offset + i
             record_id = f"TR{idx:012d}"
-            commodity = self.all_commodities[np.random.randint(len(self.all_commodities))]
+            commodity = self.all_commodities[
+                np.random.randint(len(self.all_commodities))
+            ]
 
             origin = np.random.choice(self.COUNTRIES)
             destination = np.random.choice(self.COUNTRIES)
@@ -110,8 +163,7 @@ class TradeGenerator(BaseGenerator):
                 total_value = round(total_value * np.random.uniform(0.5, 2.0), 2)
 
             vessel_id = (
-                np.random.choice(self.vessel_ids)
-                if trade_type == "PHYSICAL" else None
+                np.random.choice(self.vessel_ids) if trade_type == "PHYSICAL" else None
             )
 
             # Orphan FK: vessel_id that does not exist in dim table - 1%
@@ -147,9 +199,7 @@ class TradeGenerator(BaseGenerator):
 
             # Late / backdated trade: trade_timestamp is hours or days before trade_date - 2%
             if np.random.random() < 0.02:
-                trade_ts = trade_ts - timedelta(
-                    hours=np.random.randint(1, 72)
-                )
+                trade_ts = trade_ts - timedelta(hours=np.random.randint(1, 72))
 
             settlement_date = trade_date + timedelta(
                 days=np.random.choice([2, 5, 10, 30])
@@ -157,9 +207,7 @@ class TradeGenerator(BaseGenerator):
 
             # Settlement date before trade date (impossible) - 0.3%
             if np.random.random() < 0.003:
-                settlement_date = trade_date - timedelta(
-                    days=np.random.randint(1, 10)
-                )
+                settlement_date = trade_date - timedelta(days=np.random.randint(1, 10))
 
             currency = np.random.choice(
                 ["USD", "EUR", "GBP", "SGD"], p=[0.70, 0.15, 0.10, 0.05]
@@ -204,7 +252,9 @@ class TradeGenerator(BaseGenerator):
                 "booking_entity": np.random.choice(self.BOOKING_ENTITIES),
                 "trader_id": f"TRD{np.random.randint(1, 500):04d}",
                 "desk": np.random.choice(self.DESKS),
-                "source_system": np.random.choice(["ETRM_PRIMARY", "ETRM_LEGACY", "MANUAL_ENTRY"]),
+                "source_system": np.random.choice(
+                    ["ETRM_PRIMARY", "ETRM_LEGACY", "MANUAL_ENTRY"]
+                ),
                 "_loaded_at": datetime.now(),
             }
 
@@ -213,12 +263,19 @@ class TradeGenerator(BaseGenerator):
                 record,
                 record_id=record_id,
                 nullable_fields=[
-                    "vessel_id", "fx_rate", "discharge_port",
-                    "loading_port", "incoterm",
+                    "vessel_id",
+                    "fx_rate",
+                    "discharge_port",
+                    "loading_port",
+                    "incoterm",
                 ],
                 text_fields=[
-                    "commodity_name", "origin_country", "destination_country",
-                    "loading_port", "discharge_port", "booking_entity",
+                    "commodity_name",
+                    "origin_country",
+                    "destination_country",
+                    "loading_port",
+                    "discharge_port",
+                    "booking_entity",
                 ],
                 timestamp_field="trade_timestamp",
                 loaded_at_field="_loaded_at",
@@ -235,8 +292,10 @@ class TradeGenerator(BaseGenerator):
                     "source_system": ["UNKNOWN", "MIGRATION_LEGACY", "SPREADSHEET"],
                 },
                 mutable_fields=[
-                    "buyer_counterparty_id", "seller_counterparty_id",
-                    "vessel_id", "trader_id",
+                    "buyer_counterparty_id",
+                    "seller_counterparty_id",
+                    "vessel_id",
+                    "trader_id",
                 ],
                 contradictions=[
                     # Blocked but still settled

@@ -31,6 +31,7 @@ import numpy as np
 # Issue rate configuration
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class IssueInjectionRates:
     """
@@ -42,47 +43,47 @@ class IssueInjectionRates:
     """
 
     # ── Data quality defects ──────────────────────────────────────────────
-    null_injection_rate: float = 0.015          # Random NULL in non-PK field
-    partial_record_rate: float = 0.008          # Multiple fields blanked out
-    truncated_field_rate: float = 0.005         # Field value chopped mid-string
-    wrong_type_rate: float = 0.003              # e.g. string in numeric column
+    null_injection_rate: float = 0.015  # Random NULL in non-PK field
+    partial_record_rate: float = 0.008  # Multiple fields blanked out
+    truncated_field_rate: float = 0.005  # Field value chopped mid-string
+    wrong_type_rate: float = 0.003  # e.g. string in numeric column
 
     # ── Duplicates ────────────────────────────────────────────────────────
-    exact_duplicate_rate: float = 0.005         # Identical row (idempotency fail)
-    near_duplicate_rate: float = 0.008          # Same entity, minor differences
+    exact_duplicate_rate: float = 0.005  # Identical row (idempotency fail)
+    near_duplicate_rate: float = 0.008  # Same entity, minor differences
 
     # ── Temporal anomalies ────────────────────────────────────────────────
-    late_arrival_rate: float = 0.020            # Record arrives hours/days late
-    out_of_order_rate: float = 0.015            # Timestamp earlier than prior row
-    future_dated_rate: float = 0.002            # Timestamp in the future
-    timezone_drift_rate: float = 0.010          # ±N hours from expected TZ
-    stale_record_rate: float = 0.005            # _loaded_at far older than data
+    late_arrival_rate: float = 0.020  # Record arrives hours/days late
+    out_of_order_rate: float = 0.015  # Timestamp earlier than prior row
+    future_dated_rate: float = 0.002  # Timestamp in the future
+    timezone_drift_rate: float = 0.010  # ±N hours from expected TZ
+    stale_record_rate: float = 0.005  # _loaded_at far older than data
 
     # ── Referential integrity ─────────────────────────────────────────────
-    orphan_fk_rate: float = 0.010               # FK points to non-existent parent
-    self_reference_rate: float = 0.003          # buyer_id == seller_id etc.
+    orphan_fk_rate: float = 0.010  # FK points to non-existent parent
+    self_reference_rate: float = 0.003  # buyer_id == seller_id etc.
 
     # ── Format / encoding ─────────────────────────────────────────────────
-    unicode_injection_rate: float = 0.012       # Non-Latin chars, diacritics
-    extra_whitespace_rate: float = 0.020        # Leading/trailing/double spaces
-    mixed_case_rate: float = 0.015              # Case inconsistency
-    special_char_rate: float = 0.008            # HTML entities, control chars
-    encoding_corruption_rate: float = 0.004     # Mojibake / replacement chars
+    unicode_injection_rate: float = 0.012  # Non-Latin chars, diacritics
+    extra_whitespace_rate: float = 0.020  # Leading/trailing/double spaces
+    mixed_case_rate: float = 0.015  # Case inconsistency
+    special_char_rate: float = 0.008  # HTML entities, control chars
+    encoding_corruption_rate: float = 0.004  # Mojibake / replacement chars
 
     # ── Volume anomalies (applied at batch level, not per-record) ────────
-    volume_spike_probability: float = 0.03      # Batch is 3-10× normal size
-    volume_gap_probability: float = 0.02        # Batch is 0-20 % of normal
-    empty_batch_probability: float = 0.005      # Zero records delivered
+    volume_spike_probability: float = 0.03  # Batch is 3-10× normal size
+    volume_gap_probability: float = 0.02  # Batch is 0-20 % of normal
+    empty_batch_probability: float = 0.005  # Zero records delivered
 
     # ── Schema / structural ───────────────────────────────────────────────
-    unexpected_column_rate: float = 0.003       # Extra column appears
-    enum_drift_rate: float = 0.005              # Unknown enum value injected
-    json_malformed_rate: float = 0.006          # Broken JSON in JSON columns
+    unexpected_column_rate: float = 0.003  # Extra column appears
+    enum_drift_rate: float = 0.005  # Unknown enum value injected
+    json_malformed_rate: float = 0.006  # Broken JSON in JSON columns
 
     # ── Business logic violations ─────────────────────────────────────────
-    negative_value_rate: float = 0.004          # Negative where only +ve expected
-    impossible_value_rate: float = 0.003        # e.g. lat > 90, score > 1.0
-    contradictory_flag_rate: float = 0.005      # is_sanctioned but risk_rating=LOW
+    negative_value_rate: float = 0.004  # Negative where only +ve expected
+    impossible_value_rate: float = 0.003  # e.g. lat > 90, score > 1.0
+    contradictory_flag_rate: float = 0.005  # is_sanctioned but risk_rating=LOW
 
     @classmethod
     def clean(cls) -> "IssueInjectionRates":
@@ -124,8 +125,17 @@ class IssueInjectionRates:
 # Arabic/Persian/Russian name transliteration variants that cause real
 # screening false-positives/false-negatives in production
 TRANSLITERATION_VARIANTS = {
-    "Mohammed": ["Mohammad", "Muhammad", "Muhammed", "Mohamed", "Mohamad",
-                 "Mahomed", "Muhamad", "Mohamud", "Muḥammad"],
+    "Mohammed": [
+        "Mohammad",
+        "Muhammad",
+        "Muhammed",
+        "Mohamed",
+        "Mohamad",
+        "Mahomed",
+        "Muhamad",
+        "Mohamud",
+        "Muḥammad",
+    ],
     "Ahmed": ["Ahmad", "Ahmet", "Achmed", "Akhmed", "Achmad"],
     "Hussein": ["Husain", "Hussain", "Husein", "Hossein", "Hüseyin"],
     "Ali": ["Aly", "Alee", "Aalee", "'Alī"],
@@ -149,10 +159,23 @@ TRANSLITERATION_VARIANTS = {
 
 # Common company name variations that cause screening noise
 COMPANY_NAME_VARIATIONS = {
-    "Trading": ["Trading Co", "Trading Corp", "Trading LLC", "Trading Ltd",
-                "Trading Company", "Trdg", "Trading Establishment"],
-    "Shipping": ["Shipping Co", "Shipping LLC", "Shipping Lines",
-                 "Maritime", "Marine", "Shipmanagement"],
+    "Trading": [
+        "Trading Co",
+        "Trading Corp",
+        "Trading LLC",
+        "Trading Ltd",
+        "Trading Company",
+        "Trdg",
+        "Trading Establishment",
+    ],
+    "Shipping": [
+        "Shipping Co",
+        "Shipping LLC",
+        "Shipping Lines",
+        "Maritime",
+        "Marine",
+        "Shipmanagement",
+    ],
     "Oil": ["Oil & Gas", "Petroleum", "Petrol", "Energy", "Fuel"],
     "International": ["Int'l", "Intl", "Int.", "Internat."],
     "General": ["Gen.", "Gen", "Genl"],
@@ -167,10 +190,26 @@ PROBLEMATIC_UNICODE = {
     "arabic": ["محمد", "أحمد", "شركة", "تجارة"],
     "cyrillic": ["Владимир", "Газпром", "Роснефть", "Совкомфлот"],
     "chinese": ["中国石油", "中国石化", "华为", "中远海运"],
-    "mixed_script": ["Société Générale", "Ørsted", "Škoda", "Ünlü",
-                     "São Paulo", "José García", "François Müller"],
-    "diacritics": ["café", "naïve", "résumé", "über", "ñoño",
-                   "Zürich", "Ångström", "Dvořák", "Łódź"],
+    "mixed_script": [
+        "Société Générale",
+        "Ørsted",
+        "Škoda",
+        "Ünlü",
+        "São Paulo",
+        "José García",
+        "François Müller",
+    ],
+    "diacritics": [
+        "café",
+        "naïve",
+        "résumé",
+        "über",
+        "ñoño",
+        "Zürich",
+        "Ångström",
+        "Dvořák",
+        "Łódź",
+    ],
     "zero_width": ["\u200b", "\u200c", "\u200d", "\ufeff"],  # ZWS, ZWNJ, ZWJ, BOM
     "homoglyphs": [  # Characters that LOOK like Latin but aren't
         ("а", "a"),  # Cyrillic а vs Latin a
@@ -185,6 +224,7 @@ PROBLEMATIC_UNICODE = {
 # ---------------------------------------------------------------------------
 # Core issue injector class
 # ---------------------------------------------------------------------------
+
 
 class DataQualityIssueInjector:
     """
@@ -206,24 +246,33 @@ class DataQualityIssueInjector:
         """Returns a log of all injected issues for audit / validation."""
         return self._issue_log
 
-    def _log_issue(self, record_id: str, issue_type: str, field: str,
-                   original_value: Any, corrupted_value: Any) -> None:
-        self._issue_log.append({
-            "record_id": record_id,
-            "issue_type": issue_type,
-            "field": field,
-            "original_value": str(original_value)[:200],
-            "corrupted_value": str(corrupted_value)[:200],
-            "injected_at": datetime.now().isoformat(),
-        })
+    def _log_issue(
+        self,
+        record_id: str,
+        issue_type: str,
+        field: str,
+        original_value: Any,
+        corrupted_value: Any,
+    ) -> None:
+        self._issue_log.append(
+            {
+                "record_id": record_id,
+                "issue_type": issue_type,
+                "field": field,
+                "original_value": str(original_value)[:200],
+                "corrupted_value": str(corrupted_value)[:200],
+                "injected_at": datetime.now().isoformat(),
+            }
+        )
 
     def _should_inject(self, rate: float) -> bool:
         return self.rng.random() < rate
 
     # ─── NULL / missing field injection ───────────────────────────────────
 
-    def inject_null(self, record: dict, nullable_fields: list[str],
-                    record_id: str = "") -> dict:
+    def inject_null(
+        self, record: dict, nullable_fields: list[str], record_id: str = ""
+    ) -> dict:
         """Randomly NULL out one or more fields."""
         if self._should_inject(self.rates.null_injection_rate):
             field = random.choice(nullable_fields)
@@ -250,9 +299,9 @@ class DataQualityIssueInjector:
             return copy.deepcopy(record)
         return None
 
-    def maybe_create_near_duplicate(self, record: dict,
-                                     mutable_fields: list[str],
-                                     record_id: str = "") -> dict | None:
+    def maybe_create_near_duplicate(
+        self, record: dict, mutable_fields: list[str], record_id: str = ""
+    ) -> dict | None:
         """
         Returns a near-duplicate: same entity, minor differences.
         Simulates re-keying, source system sync issues, CDC replays.
@@ -263,25 +312,34 @@ class DataQualityIssueInjector:
         dupe = copy.deepcopy(record)
         # Modify 1-2 fields slightly
         num_changes = random.randint(1, 2)
-        for field in random.sample(mutable_fields, min(num_changes, len(mutable_fields))):
+        for field in random.sample(
+            mutable_fields, min(num_changes, len(mutable_fields))
+        ):
             original = dupe.get(field)
             if isinstance(original, str) and len(original) > 2:
                 # Introduce a typo or case change
                 if random.random() < 0.5:
-                    dupe[field] = original.upper() if original.islower() else original.lower()
+                    dupe[field] = (
+                        original.upper() if original.islower() else original.lower()
+                    )
                 else:
                     pos = random.randint(0, len(original) - 1)
-                    dupe[field] = original[:pos] + original[pos + 1:]  # Delete a char
-            self._log_issue(record_id, "NEAR_DUPLICATE", field, original, dupe.get(field))
+                    dupe[field] = original[:pos] + original[pos + 1 :]  # Delete a char
+            self._log_issue(
+                record_id, "NEAR_DUPLICATE", field, original, dupe.get(field)
+            )
 
         return dupe
 
     # ─── Temporal anomalies ───────────────────────────────────────────────
 
-    def inject_temporal_issues(self, record: dict,
-                                timestamp_field: str,
-                                loaded_at_field: str = "_loaded_at",
-                                record_id: str = "") -> dict:
+    def inject_temporal_issues(
+        self,
+        record: dict,
+        timestamp_field: str,
+        loaded_at_field: str = "_loaded_at",
+        record_id: str = "",
+    ) -> dict:
         """Inject late arrivals, future dates, timezone drift."""
         ts = record.get(timestamp_field)
         if ts is None:
@@ -297,36 +355,43 @@ class DataQualityIssueInjector:
             # Record arrives 2-72 hours after its actual timestamp
             delay = timedelta(hours=random.uniform(2, 72))
             record[loaded_at_field] = ts + delay
-            self._log_issue(record_id, "LATE_ARRIVAL", loaded_at_field,
-                            ts, record[loaded_at_field])
+            self._log_issue(
+                record_id, "LATE_ARRIVAL", loaded_at_field, ts, record[loaded_at_field]
+            )
 
         if self._should_inject(self.rates.out_of_order_rate):
             # Timestamp shifted backward (out-of-sequence)
             shift = timedelta(minutes=random.uniform(1, 120))
             record[timestamp_field] = ts - shift
-            self._log_issue(record_id, "OUT_OF_ORDER", timestamp_field,
-                            ts, record[timestamp_field])
+            self._log_issue(
+                record_id, "OUT_OF_ORDER", timestamp_field, ts, record[timestamp_field]
+            )
 
         if self._should_inject(self.rates.future_dated_rate):
             # Timestamp in the future (clock skew, bad TZ conversion)
             future = datetime.now() + timedelta(hours=random.uniform(1, 48))
             record[timestamp_field] = future
-            self._log_issue(record_id, "FUTURE_DATED", timestamp_field,
-                            ts, future)
+            self._log_issue(record_id, "FUTURE_DATED", timestamp_field, ts, future)
 
         if self._should_inject(self.rates.timezone_drift_rate):
             # Off by N hours (common with global source systems)
             drift_hours = random.choice([-8, -5, -1, 1, 3, 5, 5.5, 8, 9])
             record[timestamp_field] = ts + timedelta(hours=drift_hours)
-            self._log_issue(record_id, "TIMEZONE_DRIFT", timestamp_field,
-                            ts, record[timestamp_field])
+            self._log_issue(
+                record_id,
+                "TIMEZONE_DRIFT",
+                timestamp_field,
+                ts,
+                record[timestamp_field],
+            )
 
         return record
 
     # ─── Format / encoding issues ─────────────────────────────────────────
 
-    def inject_text_issues(self, record: dict, text_fields: list[str],
-                            record_id: str = "") -> dict:
+    def inject_text_issues(
+        self, record: dict, text_fields: list[str], record_id: str = ""
+    ) -> dict:
         """Inject Unicode, whitespace, case, and encoding problems into text fields."""
         for field in text_fields:
             value = record.get(field)
@@ -334,24 +399,28 @@ class DataQualityIssueInjector:
                 continue
 
             if self._should_inject(self.rates.extra_whitespace_rate):
-                variant = random.choice([
-                    f"  {value}",           # Leading spaces
-                    f"{value}  ",           # Trailing spaces
-                    value.replace(" ", "  ", 1),  # Double space
-                    f"\t{value}",           # Tab prefix
-                    f"{value}\n",           # Trailing newline
-                ])
+                variant = random.choice(
+                    [
+                        f"  {value}",  # Leading spaces
+                        f"{value}  ",  # Trailing spaces
+                        value.replace(" ", "  ", 1),  # Double space
+                        f"\t{value}",  # Tab prefix
+                        f"{value}\n",  # Trailing newline
+                    ]
+                )
                 record[field] = variant
                 self._log_issue(record_id, "EXTRA_WHITESPACE", field, value, variant)
                 continue
 
             if self._should_inject(self.rates.mixed_case_rate):
-                variant = random.choice([
-                    value.upper(),
-                    value.lower(),
-                    value.title(),
-                    value.swapcase(),
-                ])
+                variant = random.choice(
+                    [
+                        value.upper(),
+                        value.lower(),
+                        value.title(),
+                        value.swapcase(),
+                    ]
+                )
                 record[field] = variant
                 self._log_issue(record_id, "MIXED_CASE", field, value, variant)
                 continue
@@ -378,7 +447,9 @@ class DataQualityIssueInjector:
 
     def _inject_unicode(self, value: str) -> str:
         """Insert Unicode complications into a string."""
-        strategy = random.choice(["diacritics", "mixed_script", "zero_width", "homoglyph"])
+        strategy = random.choice(
+            ["diacritics", "mixed_script", "zero_width", "homoglyph"]
+        )
 
         if strategy == "diacritics":
             replacements = {"a": "à", "e": "é", "o": "ö", "u": "ü", "n": "ñ", "c": "ç"}
@@ -403,7 +474,9 @@ class DataQualityIssueInjector:
 
     def _inject_special_chars(self, value: str) -> str:
         """Inject HTML entities, control chars, or SQL-injection-like strings."""
-        strategy = random.choice(["html_entity", "control_char", "sql_like", "pipe_delim"])
+        strategy = random.choice(
+            ["html_entity", "control_char", "sql_like", "pipe_delim"]
+        )
 
         if strategy == "html_entity":
             return value.replace("&", "&amp;", 1) if "&" in value else f"{value}&nbsp;"
@@ -419,13 +492,25 @@ class DataQualityIssueInjector:
 
     def _inject_encoding_corruption(self, value: str) -> str:
         """Simulate mojibake / encoding mismatch."""
-        strategy = random.choice(["replacement_char", "latin1_artifact", "double_encode"])
+        strategy = random.choice(
+            ["replacement_char", "latin1_artifact", "double_encode"]
+        )
 
         if strategy == "replacement_char":
             pos = random.randint(0, max(len(value) - 1, 0))
-            return value[:pos] + "�" + value[pos + 1:]
+            return value[:pos] + "�" + value[pos + 1 :]
         elif strategy == "latin1_artifact":
-            artifacts = ["\xc3\xa4", "\xc3\xb6", "\xc3\xbc", "\xc3\xa9", "\xc3\xb1", "\xe2\x80\x99", "\xe2\x80\x93", "\xc2\xa3", "\xc2\xa9"]
+            artifacts = [
+                "\xc3\xa4",
+                "\xc3\xb6",
+                "\xc3\xbc",
+                "\xc3\xa9",
+                "\xc3\xb1",
+                "\xe2\x80\x99",
+                "\xe2\x80\x93",
+                "\xc2\xa3",
+                "\xc2\xa9",
+            ]
             return value + random.choice(artifacts)
         elif strategy == "double_encode":
             try:
@@ -436,9 +521,9 @@ class DataQualityIssueInjector:
 
     # ─── Referential integrity breaks ─────────────────────────────────────
 
-    def inject_orphan_fk(self, record: dict, fk_field: str,
-                          prefix: str = "ORPHAN_",
-                          record_id: str = "") -> dict:
+    def inject_orphan_fk(
+        self, record: dict, fk_field: str, prefix: str = "ORPHAN_", record_id: str = ""
+    ) -> dict:
         """Replace FK with a value that points to nothing."""
         if self._should_inject(self.rates.orphan_fk_rate):
             original = record.get(fk_field)
@@ -447,30 +532,36 @@ class DataQualityIssueInjector:
             self._log_issue(record_id, "ORPHAN_FK", fk_field, original, orphan_id)
         return record
 
-    def inject_self_reference(self, record: dict,
-                               field_a: str, field_b: str,
-                               record_id: str = "") -> dict:
+    def inject_self_reference(
+        self, record: dict, field_a: str, field_b: str, record_id: str = ""
+    ) -> dict:
         """Make two FK fields point to the same entity (buyer == seller)."""
         if self._should_inject(self.rates.self_reference_rate):
             original_b = record.get(field_b)
             record[field_b] = record[field_a]
-            self._log_issue(record_id, "SELF_REFERENCE", field_b,
-                            original_b, record[field_a])
+            self._log_issue(
+                record_id, "SELF_REFERENCE", field_b, original_b, record[field_a]
+            )
         return record
 
     # ─── Numeric / business logic violations ──────────────────────────────
 
-    def inject_numeric_issues(self, record: dict,
-                               positive_fields: list[str],
-                               bounded_fields: dict[str, tuple[float, float]] | None = None,
-                               record_id: str = "") -> dict:
+    def inject_numeric_issues(
+        self,
+        record: dict,
+        positive_fields: list[str],
+        bounded_fields: dict[str, tuple[float, float]] | None = None,
+        record_id: str = "",
+    ) -> dict:
         """Inject negative values and out-of-range values."""
         for field in positive_fields:
             value = record.get(field)
             if value is not None and isinstance(value, (int, float)):
                 if self._should_inject(self.rates.negative_value_rate):
                     record[field] = -abs(value)
-                    self._log_issue(record_id, "NEGATIVE_VALUE", field, value, record[field])
+                    self._log_issue(
+                        record_id, "NEGATIVE_VALUE", field, value, record[field]
+                    )
 
         if bounded_fields:
             for field, (low, high) in bounded_fields.items():
@@ -481,14 +572,18 @@ class DataQualityIssueInjector:
                         record[field] = high + random.uniform(0.1, high * 0.5)
                     else:
                         record[field] = low - random.uniform(0.1, abs(low) + 1)
-                    self._log_issue(record_id, "IMPOSSIBLE_VALUE", field,
-                                    original, record[field])
+                    self._log_issue(
+                        record_id, "IMPOSSIBLE_VALUE", field, original, record[field]
+                    )
 
         return record
 
-    def inject_contradictory_flags(self, record: dict,
-                                    contradictions: list[tuple[str, Any, str, Any]],
-                                    record_id: str = "") -> dict:
+    def inject_contradictory_flags(
+        self,
+        record: dict,
+        contradictions: list[tuple[str, Any, str, Any]],
+        record_id: str = "",
+    ) -> dict:
         """
         Inject contradictory business rule violations.
 
@@ -509,8 +604,9 @@ class DataQualityIssueInjector:
 
     # ─── JSON malformation ────────────────────────────────────────────────
 
-    def inject_json_issues(self, record: dict, json_fields: list[str],
-                            record_id: str = "") -> dict:
+    def inject_json_issues(
+        self, record: dict, json_fields: list[str], record_id: str = ""
+    ) -> dict:
         """Corrupt JSON fields: trailing commas, unclosed braces, wrong types."""
         for field in json_fields:
             value = record.get(field)
@@ -518,10 +614,16 @@ class DataQualityIssueInjector:
                 continue
 
             if self._should_inject(self.rates.json_malformed_rate):
-                strategy = random.choice([
-                    "trailing_comma", "unclosed_brace", "single_quotes",
-                    "raw_string", "nested_escape", "truncated",
-                ])
+                strategy = random.choice(
+                    [
+                        "trailing_comma",
+                        "unclosed_brace",
+                        "single_quotes",
+                        "raw_string",
+                        "nested_escape",
+                        "truncated",
+                    ]
+                )
                 original = value
 
                 if strategy == "trailing_comma":
@@ -542,18 +644,27 @@ class DataQualityIssueInjector:
                     record[field] = s.replace('"', '\\"')
                 elif strategy == "truncated":
                     s = value if isinstance(value, str) else json.dumps(value)
-                    record[field] = s[:max(len(s) // 2, 5)]
+                    record[field] = s[: max(len(s) // 2, 5)]
 
-                self._log_issue(record_id, "JSON_MALFORMED", field,
-                                str(original)[:100], str(record[field])[:100])
+                self._log_issue(
+                    record_id,
+                    "JSON_MALFORMED",
+                    field,
+                    str(original)[:100],
+                    str(record[field])[:100],
+                )
 
         return record
 
     # ─── Enum drift ───────────────────────────────────────────────────────
 
-    def inject_enum_drift(self, record: dict, enum_field: str,
-                           unknown_values: list[str],
-                           record_id: str = "") -> dict:
+    def inject_enum_drift(
+        self,
+        record: dict,
+        enum_field: str,
+        unknown_values: list[str],
+        record_id: str = "",
+    ) -> dict:
         """Inject an unknown/unexpected enum value (schema drift from source)."""
         if self._should_inject(self.rates.enum_drift_rate):
             original = record.get(enum_field)
@@ -564,8 +675,9 @@ class DataQualityIssueInjector:
 
     # ─── Truncation ───────────────────────────────────────────────────────
 
-    def inject_truncation(self, record: dict, text_fields: list[str],
-                           record_id: str = "") -> dict:
+    def inject_truncation(
+        self, record: dict, text_fields: list[str], record_id: str = ""
+    ) -> dict:
         """Truncate text fields mid-string (buffer overflow, ETL truncation)."""
         if not self._should_inject(self.rates.truncated_field_rate):
             return record
@@ -626,20 +738,24 @@ class DataQualityIssueInjector:
         """
         if nullable_fields:
             record = self.inject_null(record, nullable_fields, record_id)
-            record = self.inject_truncation(record, [f for f in nullable_fields
-                                                      if isinstance(record.get(f), str)],
-                                             record_id)
+            record = self.inject_truncation(
+                record,
+                [f for f in nullable_fields if isinstance(record.get(f), str)],
+                record_id,
+            )
 
         if text_fields:
             record = self.inject_text_issues(record, text_fields, record_id)
 
         if timestamp_field:
-            record = self.inject_temporal_issues(record, timestamp_field,
-                                                  loaded_at_field, record_id)
+            record = self.inject_temporal_issues(
+                record, timestamp_field, loaded_at_field, record_id
+            )
 
         if positive_fields:
-            record = self.inject_numeric_issues(record, positive_fields,
-                                                 bounded_fields, record_id)
+            record = self.inject_numeric_issues(
+                record, positive_fields, bounded_fields, record_id
+            )
 
         if json_fields:
             record = self.inject_json_issues(record, json_fields, record_id)
@@ -650,8 +766,9 @@ class DataQualityIssueInjector:
 
         if enum_fields:
             for enum_field, unknown_values in enum_fields.items():
-                record = self.inject_enum_drift(record, enum_field,
-                                                 unknown_values, record_id)
+                record = self.inject_enum_drift(
+                    record, enum_field, unknown_values, record_id
+                )
 
         if contradictions:
             record = self.inject_contradictory_flags(record, contradictions, record_id)
@@ -659,8 +776,9 @@ class DataQualityIssueInjector:
         # Near-duplicate check
         near_dupe = None
         if mutable_fields:
-            near_dupe = self.maybe_create_near_duplicate(record, mutable_fields,
-                                                          record_id)
+            near_dupe = self.maybe_create_near_duplicate(
+                record, mutable_fields, record_id
+            )
 
         return record, near_dupe
 
@@ -675,6 +793,7 @@ class DataQualityIssueInjector:
     def save_issue_log(self, path: str) -> None:
         """Persist the issue log to a JSON file for downstream validation."""
         import json as json_mod
+
         with open(path, "w") as f:
             json_mod.dump(self._issue_log, f, indent=2, default=str)
 
@@ -682,6 +801,7 @@ class DataQualityIssueInjector:
 # ---------------------------------------------------------------------------
 # Name variation generator (for sanctions screening realism)
 # ---------------------------------------------------------------------------
+
 
 class NameVariationGenerator:
     """
@@ -697,10 +817,17 @@ class NameVariationGenerator:
         Create a realistic variant of a name using common transliteration,
         abbreviation, and formatting differences.
         """
-        strategy = self.rng.choice([
-            "transliteration", "abbreviation", "honorific",
-            "ordering", "spacing", "punctuation", "partial",
-        ])
+        strategy = self.rng.choice(
+            [
+                "transliteration",
+                "abbreviation",
+                "honorific",
+                "ordering",
+                "spacing",
+                "punctuation",
+                "partial",
+            ]
+        )
 
         if strategy == "transliteration":
             return self._transliterate(name)
@@ -737,8 +864,18 @@ class NameVariationGenerator:
         return name
 
     def _add_honorific(self, name: str) -> str:
-        honorifics = ["Mr.", "Mrs.", "Dr.", "Prof.", "Haj", "Sheikh",
-                       "Eng.", "Gen.", "Col.", "Capt."]
+        honorifics = [
+            "Mr.",
+            "Mrs.",
+            "Dr.",
+            "Prof.",
+            "Haj",
+            "Sheikh",
+            "Eng.",
+            "Gen.",
+            "Col.",
+            "Capt.",
+        ]
         return f"{self.rng.choice(honorifics)} {name}"
 
     def _reorder_name(self, name: str) -> str:
@@ -750,19 +887,19 @@ class NameVariationGenerator:
 
     def _alter_spacing(self, name: str) -> str:
         strategies = [
-            name.replace(" ", "-"),          # Hyphenate
-            name.replace("-", " "),          # Remove hyphens
-            name.replace(" ", ""),           # No spaces
-            name.replace(" ", "  "),         # Double spaces
+            name.replace(" ", "-"),  # Hyphenate
+            name.replace("-", " "),  # Remove hyphens
+            name.replace(" ", ""),  # No spaces
+            name.replace(" ", "  "),  # Double spaces
         ]
         return self.rng.choice(strategies)
 
     def _alter_punctuation(self, name: str) -> str:
         strategies = [
-            name.replace(".", ""),           # Remove periods
-            name.replace(",", ""),           # Remove commas
-            name.replace("'", ""),           # Remove apostrophes
-            name.replace("'", "'"),          # Smart quote → plain
+            name.replace(".", ""),  # Remove periods
+            name.replace(",", ""),  # Remove commas
+            name.replace("'", ""),  # Remove apostrophes
+            name.replace("'", "'"),  # Smart quote → plain
         ]
         return self.rng.choice(strategies)
 
@@ -778,6 +915,7 @@ class NameVariationGenerator:
 # ---------------------------------------------------------------------------
 # Scenario generators for domain-specific BAU problems
 # ---------------------------------------------------------------------------
+
 
 class SanctionsScenarioGenerator:
     """
@@ -797,13 +935,15 @@ class SanctionsScenarioGenerator:
         jurisdictions = ["CY", "BS", "VG", "PA", "BM", "KY", "JE", "GG", "IM"]
         chain = []
         for i in range(depth):
-            chain.append({
-                "level": i,
-                "jurisdiction": self.rng.choice(jurisdictions),
-                "ownership_pct": round(self.rng.uniform(25, 100), 1),
-                "is_nominee": self.rng.random() < 0.4,
-                "registration_date_lag_days": self.rng.randint(0, 90),
-            })
+            chain.append(
+                {
+                    "level": i,
+                    "jurisdiction": self.rng.choice(jurisdictions),
+                    "ownership_pct": round(self.rng.uniform(25, 100), 1),
+                    "is_nominee": self.rng.random() < 0.4,
+                    "registration_date_lag_days": self.rng.randint(0, 90),
+                }
+            )
         return chain
 
     def generate_flag_hopping_history(self, num_changes: int = 4) -> list[dict]:
@@ -815,13 +955,15 @@ class SanctionsScenarioGenerator:
         history = []
         current_date = datetime.now() - timedelta(days=365 * 3)
         for i in range(num_changes):
-            history.append({
-                "change_number": i + 1,
-                "from_flag": self.rng.choice(flags),
-                "to_flag": self.rng.choice(flags),
-                "change_date": current_date.date(),
-                "days_under_previous_flag": self.rng.randint(30, 365),
-            })
+            history.append(
+                {
+                    "change_number": i + 1,
+                    "from_flag": self.rng.choice(flags),
+                    "to_flag": self.rng.choice(flags),
+                    "change_date": current_date.date(),
+                    "days_under_previous_flag": self.rng.randint(30, 365),
+                }
+            )
             current_date += timedelta(days=self.rng.randint(60, 365))
         return history
 
@@ -864,13 +1006,15 @@ class SanctionsScenarioGenerator:
             # Price escalation through the chain
             base_price = self.rng.uniform(50, 500)
             markup = 1 + (i * self.rng.uniform(0.02, 0.08))
-            legs.append({
-                "leg": i + 1,
-                "buyer": buyer,
-                "seller": seller,
-                "price_per_mt": round(base_price * markup, 4),
-                "time_between_legs_hours": self.rng.randint(1, 72),
-            })
+            legs.append(
+                {
+                    "leg": i + 1,
+                    "buyer": buyer,
+                    "seller": seller,
+                    "price_per_mt": round(base_price * markup, 4),
+                    "time_between_legs_hours": self.rng.randint(1, 72),
+                }
+            )
         return legs
 
     def generate_rapid_entity_creation_burst(self) -> dict:
@@ -898,9 +1042,14 @@ class SanctionsScenarioGenerator:
             "outage_duration_hours": round(self.rng.uniform(0.5, 12), 1),
             "backlog_size": self.rng.randint(500, 50_000),
             "priority_requeue_pct": round(self.rng.uniform(5, 30), 1),
-            "cause": self.rng.choice([
-                "SYSTEM_OUTAGE", "LIST_UPDATE_PROCESSING",
-                "SCREENING_ENGINE_TIMEOUT", "DATABASE_FAILOVER",
-                "NETWORK_PARTITION", "VENDOR_API_RATE_LIMIT",
-            ]),
+            "cause": self.rng.choice(
+                [
+                    "SYSTEM_OUTAGE",
+                    "LIST_UPDATE_PROCESSING",
+                    "SCREENING_ENGINE_TIMEOUT",
+                    "DATABASE_FAILOVER",
+                    "NETWORK_PARTITION",
+                    "VENDOR_API_RATE_LIMIT",
+                ]
+            ),
         }

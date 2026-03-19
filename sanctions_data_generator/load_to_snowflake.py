@@ -167,7 +167,9 @@ class SnowflakeLoader:
 def main():
     parser = argparse.ArgumentParser(description="Load data to Snowflake")
     parser.add_argument("--manifest", required=True, help="Path to manifest.json")
-    parser.add_argument("--verify-only", action="store_true", help="Only verify row counts")
+    parser.add_argument(
+        "--verify-only", action="store_true", help="Only verify row counts"
+    )
     args = parser.parse_args()
 
     loader = SnowflakeLoader()

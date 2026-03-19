@@ -44,7 +44,9 @@ class SanctionsListGenerator(BaseGenerator):
         self.injector = DataQualityIssueInjector(issue_rates, seed)
         self.name_gen = NameVariationGenerator(seed)
 
-    def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
+    def generate_batch(
+        self, batch_size: int, batch_offset: int = 0, **kwargs
+    ) -> pd.DataFrame:
         """Generate a batch of sanctions list entries with production-grade issues."""
         records = []
 
@@ -92,7 +94,9 @@ class SanctionsListGenerator(BaseGenerator):
             if np.random.random() < 0.03:
                 num_aliases = np.random.randint(10, 30)
             else:
-                num_aliases = np.random.choice([0, 1, 2, 3, 4], p=[0.20, 0.30, 0.25, 0.15, 0.10])
+                num_aliases = np.random.choice(
+                    [0, 1, 2, 3, 4], p=[0.20, 0.30, 0.25, 0.15, 0.10]
+                )
 
             aliases = []
             for _ in range(num_aliases):
@@ -107,7 +111,9 @@ class SanctionsListGenerator(BaseGenerator):
             num_ids = np.random.choice([0, 1, 2], p=[0.30, 0.50, 0.20])
             id_numbers = [
                 {
-                    "type": np.random.choice(["PASSPORT", "NATIONAL_ID", "TAX_ID", "REGISTRATION"]),
+                    "type": np.random.choice(
+                        ["PASSPORT", "NATIONAL_ID", "TAX_ID", "REGISTRATION"]
+                    ),
                     "number": self.fake.bothify(text="??########"),
                     "country": nationality,
                 }
@@ -119,7 +125,9 @@ class SanctionsListGenerator(BaseGenerator):
 
             # Delisting timing issues
             if is_delisted:
-                delisted_date = self.fake.date_between(start_date=listed_date, end_date="today")
+                delisted_date = self.fake.date_between(
+                    start_date=listed_date, end_date="today"
+                )
                 if np.random.random() < 0.05:
                     delisted_date = self.fake.date_between(
                         start_date="today",
@@ -133,7 +141,9 @@ class SanctionsListGenerator(BaseGenerator):
                 start_date=listed_date, end_date="now"
             )
             if np.random.random() < 0.04:
-                last_updated_ts = datetime.now() - timedelta(hours=np.random.randint(1, 72))
+                last_updated_ts = datetime.now() - timedelta(
+                    hours=np.random.randint(1, 72)
+                )
 
             # Cross-list duplicate
             cross_list_duplicate = np.random.random() < 0.06
@@ -147,11 +157,15 @@ class SanctionsListGenerator(BaseGenerator):
                 "nationality": nationality,
                 "country_codes": json.dumps(list(set(country_codes))),
                 "alias_names": json.dumps(aliases) if aliases else None,
-                "identification_numbers": json.dumps(id_numbers) if id_numbers else None,
+                "identification_numbers": json.dumps(id_numbers)
+                if id_numbers
+                else None,
                 "listed_date": listed_date,
                 "delisted_date": delisted_date,
                 "last_updated": last_updated_ts,
-                "remarks": self.fake.sentence(nb_words=15) if np.random.random() < 0.60 else None,
+                "remarks": self.fake.sentence(nb_words=15)
+                if np.random.random() < 0.60
+                else None,
                 "source_url": f"https://sanctions.example.com/{sanctions_list.lower()}/{idx}",
                 "source_system": sanctions_list.split("_")[0],
                 "_loaded_at": datetime.now(),
@@ -162,14 +176,22 @@ class SanctionsListGenerator(BaseGenerator):
                 record,
                 record_id=record_id,
                 nullable_fields=[
-                    "nationality", "alias_names", "identification_numbers",
-                    "remarks", "source_url", "delisted_date",
+                    "nationality",
+                    "alias_names",
+                    "identification_numbers",
+                    "remarks",
+                    "source_url",
+                    "delisted_date",
                     "country_codes",
                 ],
                 text_fields=["entity_name", "remarks", "nationality"],
                 json_fields=["alias_names", "identification_numbers", "country_codes"],
                 enum_fields={
-                    "entity_type": ["ORGANIZATION", "SHIPPING_COMPANY", "FRONT_COMPANY"],
+                    "entity_type": [
+                        "ORGANIZATION",
+                        "SHIPPING_COMPANY",
+                        "FRONT_COMPANY",
+                    ],
                     "sanctions_list": ["OFAC_CAPTA", "EU_EMBARGO", "CUSTOM_INTERNAL"],
                 },
                 mutable_fields=["entity_name", "nationality", "sanctions_program"],
@@ -183,10 +205,13 @@ class SanctionsListGenerator(BaseGenerator):
             # Cross-list duplicate (slightly different entry)
             if cross_list_duplicate:
                 dupe = record.copy()
-                other_list = np.random.choice([
-                    sl for sl in sanctions_config.SANCTIONS_LISTS
-                    if sl != sanctions_list
-                ])
+                other_list = np.random.choice(
+                    [
+                        sl
+                        for sl in sanctions_config.SANCTIONS_LISTS
+                        if sl != sanctions_list
+                    ]
+                )
                 dupe["entity_id"] = f"SE{idx:010d}_DUP"
                 dupe["sanctions_list"] = other_list
                 dupe["source_system"] = other_list.split("_")[0]

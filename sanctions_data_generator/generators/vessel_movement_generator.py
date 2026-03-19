@@ -38,43 +38,51 @@ class VesselMovementGenerator(BaseGenerator):
 
     # Major port coordinates (lat, lon)
     PORTS = {
-        "SINGAPORE":     (1.29,   103.85),
-        "ROTTERDAM":     (51.92,  4.48),
-        "HOUSTON":       (29.76,  -95.36),
-        "FUJAIRAH":      (25.12,  56.33),
-        "SHANGHAI":      (31.23,  121.47),
-        "BUSAN":         (35.10,  129.04),
-        "JEBEL_ALI":     (25.01,  55.06),
-        "MUMBAI":        (19.08,  72.88),
-        "SANTOS":        (-23.96, -46.33),
-        "DURBAN":        (-29.87, 31.05),
-        "BANDAR_ABBAS":  (27.19,  56.27),
-        "NOVOROSSIYSK":  (44.72,  37.77),
-        "PRIMORSK":      (60.35,  28.68),
-        "RIGA":          (56.95,  24.11),
-        "TARTUS":        (34.89,  35.89),
-        "NAMPO":         (38.73,  125.41),
-        "VLADIVOSTOK":   (43.12,  131.87),
-        "KOZMINO":       (42.73,  133.02),
+        "SINGAPORE": (1.29, 103.85),
+        "ROTTERDAM": (51.92, 4.48),
+        "HOUSTON": (29.76, -95.36),
+        "FUJAIRAH": (25.12, 56.33),
+        "SHANGHAI": (31.23, 121.47),
+        "BUSAN": (35.10, 129.04),
+        "JEBEL_ALI": (25.01, 55.06),
+        "MUMBAI": (19.08, 72.88),
+        "SANTOS": (-23.96, -46.33),
+        "DURBAN": (-29.87, 31.05),
+        "BANDAR_ABBAS": (27.19, 56.27),
+        "NOVOROSSIYSK": (44.72, 37.77),
+        "PRIMORSK": (60.35, 28.68),
+        "RIGA": (56.95, 24.11),
+        "TARTUS": (34.89, 35.89),
+        "NAMPO": (38.73, 125.41),
+        "VLADIVOSTOK": (43.12, 131.87),
+        "KOZMINO": (42.73, 133.02),
     }
 
     SANCTIONED_PORTS = [
-        "BANDAR_ABBAS", "NOVOROSSIYSK", "PRIMORSK",
-        "TARTUS", "NAMPO", "KOZMINO",
+        "BANDAR_ABBAS",
+        "NOVOROSSIYSK",
+        "PRIMORSK",
+        "TARTUS",
+        "NAMPO",
+        "KOZMINO",
     ]
 
     # Known STS transfer hotspot zones (lat, lon, radius_deg)
     STS_HOTSPOTS = [
-        (36.0, 15.0, 2.0),    # Mediterranean off Malta
-        (25.0, 56.0, 1.5),    # Fujairah anchorage
-        (1.0, 104.0, 1.0),    # Singapore Strait
-        (-6.0, 106.0, 1.5),   # Java Sea
-        (10.0, -61.0, 1.0),   # Trinidad and Tobago
-        (37.0, 26.0, 1.5),    # Aegean Sea / Kalamata
+        (36.0, 15.0, 2.0),  # Mediterranean off Malta
+        (25.0, 56.0, 1.5),  # Fujairah anchorage
+        (1.0, 104.0, 1.0),  # Singapore Strait
+        (-6.0, 106.0, 1.5),  # Java Sea
+        (10.0, -61.0, 1.0),  # Trinidad and Tobago
+        (37.0, 26.0, 1.5),  # Aegean Sea / Kalamata
     ]
 
-    def __init__(self, seed: int = 42, vessel_ids: list = None,
-                 issue_rates: IssueInjectionRates | None = None):
+    def __init__(
+        self,
+        seed: int = 42,
+        vessel_ids: list = None,
+        issue_rates: IssueInjectionRates | None = None,
+    ):
         super().__init__(seed)
         self.vessel_ids = vessel_ids or [f"VS{i:010d}" for i in range(500_000)]
         self.port_names = list(self.PORTS.keys())
@@ -101,30 +109,40 @@ class VesselMovementGenerator(BaseGenerator):
 
             # Speed varies during voyage
             if progress < 0.1 or progress > 0.9:
-                speed = np.random.uniform(2, 8)       # Slow near port
+                speed = np.random.uniform(2, 8)  # Slow near port
             else:
-                speed = np.random.uniform(10, 16)     # Cruising speed
+                speed = np.random.uniform(10, 16)  # Cruising speed
 
-            heading = np.degrees(np.arctan2(
-                dest_coords[1] - origin_coords[1],
-                dest_coords[0] - origin_coords[0],
-            )) % 360
+            heading = (
+                np.degrees(
+                    np.arctan2(
+                        dest_coords[1] - origin_coords[1],
+                        dest_coords[0] - origin_coords[0],
+                    )
+                )
+                % 360
+            )
             heading += np.random.normal(0, 5)
 
-            points.append({
-                "latitude": round(lat, 6),
-                "longitude": round(lon, 6),
-                "speed_knots": round(speed, 1),
-                "heading": round(heading % 360, 1),
-                "port_of_call": (
-                    origin if progress < 0.05
-                    else (destination if progress > 0.95 else None)
-                ),
-            })
+            points.append(
+                {
+                    "latitude": round(lat, 6),
+                    "longitude": round(lon, 6),
+                    "speed_knots": round(speed, 1),
+                    "heading": round(heading % 360, 1),
+                    "port_of_call": (
+                        origin
+                        if progress < 0.05
+                        else (destination if progress > 0.95 else None)
+                    ),
+                }
+            )
 
         return points
 
-    def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
+    def generate_batch(
+        self, batch_size: int, batch_offset: int = 0, **kwargs
+    ) -> pd.DataFrame:
         """
         Generate vessel movement AIS data with production-grade issues.
         Optimized for high-volume generation.
@@ -150,7 +168,9 @@ class VesselMovementGenerator(BaseGenerator):
 
             # Dark activity period (AIS turned off) - 2% chance
             has_dark_period = np.random.random() < 0.02
-            dark_start = np.random.randint(0, max(num_pings - 20, 1)) if has_dark_period else -1
+            dark_start = (
+                np.random.randint(0, max(num_pings - 20, 1)) if has_dark_period else -1
+            )
             dark_end = dark_start + np.random.randint(5, 20) if has_dark_period else -1
 
             # Extended dark activity (days, not hours) - 0.3% chance
@@ -158,8 +178,7 @@ class VesselMovementGenerator(BaseGenerator):
                 dark_end = min(dark_start + np.random.randint(50, 200), num_pings - 1)
 
             is_near_sanctioned = (
-                origin in self.SANCTIONED_PORTS
-                or destination in self.SANCTIONED_PORTS
+                origin in self.SANCTIONED_PORTS or destination in self.SANCTIONED_PORTS
             )
 
             # STS transfer event injection - 0.5% of voyages
@@ -172,8 +191,10 @@ class VesselMovementGenerator(BaseGenerator):
             time_increment = timedelta(hours=24) / num_pings
 
             for j, point in enumerate(voyage_points):
-                timestamp = base_time + (time_increment * j) + timedelta(
-                    seconds=np.random.randint(-30, 30)
+                timestamp = (
+                    base_time
+                    + (time_increment * j)
+                    + timedelta(seconds=np.random.randint(-30, 30))
                 )
 
                 is_dark = has_dark_period and dark_start <= j <= dark_end
@@ -219,18 +240,27 @@ class VesselMovementGenerator(BaseGenerator):
                     "is_dark_activity": is_dark,
                     "dark_duration_hours": (
                         round((dark_end - dark_start) * (24 / num_pings), 1)
-                        if is_dark and j == dark_start else None
+                        if is_dark and j == dark_start
+                        else None
                     ),
                     "zone_risk_score": max(zone_risk, 0),
                     "is_near_sanctioned_zone": is_near_sanctioned or zone_risk > 50,
                     "is_sts_indicator": is_sts,
-                    "ais_message_type": int(np.random.choice(
-                        [1, 2, 3, 5, 18, 19],
-                        p=[0.30, 0.30, 0.15, 0.10, 0.10, 0.05],
-                    )),
+                    "ais_message_type": int(
+                        np.random.choice(
+                            [1, 2, 3, 5, 18, 19],
+                            p=[0.30, 0.30, 0.15, 0.10, 0.10, 0.05],
+                        )
+                    ),
                     "navigation_status": np.random.choice(
-                        ["UNDER_WAY", "AT_ANCHOR", "NOT_UNDER_COMMAND",
-                         "MOORED", "RESTRICTED_MANOEUVRABILITY", "FISHING"],
+                        [
+                            "UNDER_WAY",
+                            "AT_ANCHOR",
+                            "NOT_UNDER_COMMAND",
+                            "MOORED",
+                            "RESTRICTED_MANOEUVRABILITY",
+                            "FISHING",
+                        ],
                         p=[0.60, 0.15, 0.02, 0.15, 0.05, 0.03],
                     ),
                     "source_system": np.random.choice(
@@ -244,7 +274,9 @@ class VesselMovementGenerator(BaseGenerator):
                     record,
                     record_id=record_id,
                     nullable_fields=[
-                        "speed_knots", "heading", "port_of_call",
+                        "speed_knots",
+                        "heading",
+                        "port_of_call",
                         "dark_duration_hours",
                     ],
                     text_fields=["origin_port", "destination_port", "port_of_call"],
@@ -258,13 +290,22 @@ class VesselMovementGenerator(BaseGenerator):
                         "speed_knots": (0.0, 50.0),
                     },
                     enum_fields={
-                        "navigation_status": ["AIS_OFF", "UNKNOWN", "DRIFTING", "TOWING"],
+                        "navigation_status": [
+                            "AIS_OFF",
+                            "UNKNOWN",
+                            "DRIFTING",
+                            "TOWING",
+                        ],
                         "source_system": ["MANUAL_REPORT", "RADAR", "UNKNOWN_SOURCE"],
                     },
                     mutable_fields=["vessel_id", "origin_port", "destination_port"],
                     contradictions=[
-                        ("is_dark_activity", True, "speed_knots",
-                         round(np.random.uniform(8, 14), 1)),
+                        (
+                            "is_dark_activity",
+                            True,
+                            "speed_knots",
+                            round(np.random.uniform(8, 14), 1),
+                        ),
                         ("is_near_sanctioned_zone", True, "zone_risk_score", 0.0),
                     ],
                 )

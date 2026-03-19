@@ -37,13 +37,18 @@ class DataOrchestrator:
     """Orchestrate synthetic data generation across all domains."""
 
     ENV_MULTIPLIERS = {
-        "dev":  volume_config.DEV_MULTIPLIER,    # 0.001x
-        "test": volume_config.TEST_MULTIPLIER,   # 0.01x
-        "prod": 1.0,                             # Full scale
+        "dev": volume_config.DEV_MULTIPLIER,  # 0.001x
+        "test": volume_config.TEST_MULTIPLIER,  # 0.01x
+        "prod": 1.0,  # Full scale
     }
 
-    def __init__(self, env: str, output_dir: str, seed: int = 42,
-                 issue_profile: str | None = None):
+    def __init__(
+        self,
+        env: str,
+        output_dir: str,
+        seed: int = 42,
+        issue_profile: str | None = None,
+    ):
         self.env = env
         self.multiplier = self.ENV_MULTIPLIERS[env]
         self.output_dir = Path(output_dir)
@@ -78,8 +83,7 @@ class DataOrchestrator:
         factory = profiles.get(profile)
         if factory is None:
             raise ValueError(
-                f"Unknown issue profile '{profile}'. "
-                f"Choose from: {', '.join(profiles)}"
+                f"Unknown issue profile '{profile}'. Choose from: {', '.join(profiles)}"
             )
         return factory()
 
@@ -96,11 +100,13 @@ class DataOrchestrator:
         count = self._scale(volume_config.COUNTERPARTIES)
         logger.info(f"Generating {count:,} counterparty records...")
         files = gen.generate_to_parquet(
-            self.output_dir / "counterparties", count,
+            self.output_dir / "counterparties",
+            count,
             file_prefix="counterparties",
         )
         self.manifest["files"]["counterparties"] = {
-            "count": count, "files": [str(f) for f in files],
+            "count": count,
+            "files": [str(f) for f in files],
         }
 
         # Sanctions lists
@@ -108,11 +114,13 @@ class DataOrchestrator:
         count = self._scale(volume_config.SANCTIONED_ENTITIES)
         logger.info(f"Generating {count:,} sanctions list entries...")
         files = gen.generate_to_parquet(
-            self.output_dir / "sanctions_lists", count,
+            self.output_dir / "sanctions_lists",
+            count,
             file_prefix="sanctions_lists",
         )
         self.manifest["files"]["sanctions_lists"] = {
-            "count": count, "files": [str(f) for f in files],
+            "count": count,
+            "files": [str(f) for f in files],
         }
 
         # Vessels
@@ -120,11 +128,13 @@ class DataOrchestrator:
         count = self._scale(volume_config.VESSELS)
         logger.info(f"Generating {count:,} vessel records...")
         files = gen.generate_to_parquet(
-            self.output_dir / "vessels", count,
+            self.output_dir / "vessels",
+            count,
             file_prefix="vessels",
         )
         self.manifest["files"]["vessels"] = {
-            "count": count, "files": [str(f) for f in files],
+            "count": count,
+            "files": [str(f) for f in files],
         }
 
     def generate_trade_data(self, days: int = None) -> None:
@@ -162,7 +172,9 @@ class DataOrchestrator:
         days = days or min(volume_config.VESSEL_MOVEMENT_DAYS, 365)
         daily_count = self._scale(volume_config.VESSEL_MOVEMENTS_PER_DAY)
 
-        logger.info(f"=== Generating vessel movements: {daily_count:,}/day x {days} days ===")
+        logger.info(
+            f"=== Generating vessel movements: {daily_count:,}/day x {days} days ==="
+        )
 
         gen = VesselMovementGenerator(seed=self.seed + 4, issue_rates=self.issue_rates)
         all_files = []
@@ -170,7 +182,9 @@ class DataOrchestrator:
         for day_offset in range(days):
             movement_date = (datetime.now() - timedelta(days=days - day_offset)).date()
             files = gen.generate_to_parquet(
-                self.output_dir / "vessel_movements" / movement_date.strftime("%Y/%m/%d"),
+                self.output_dir
+                / "vessel_movements"
+                / movement_date.strftime("%Y/%m/%d"),
                 daily_count,
                 file_prefix=f"movements_{movement_date.strftime('%Y%m%d')}",
                 movement_date=movement_date,
@@ -194,7 +208,9 @@ class DataOrchestrator:
             int(volume_config.TRADES_PER_DAY * volume_config.SCREENING_RESULTS_RATIO)
         )
 
-        logger.info(f"=== Generating screening results: {daily_count:,}/day x {days} days ===")
+        logger.info(
+            f"=== Generating screening results: {daily_count:,}/day x {days} days ==="
+        )
 
         gen = ScreeningResultGenerator(seed=self.seed + 5, issue_rates=self.issue_rates)
         all_files = []
@@ -202,7 +218,9 @@ class DataOrchestrator:
         for day_offset in range(days):
             screening_date = (datetime.now() - timedelta(days=days - day_offset)).date()
             files = gen.generate_to_parquet(
-                self.output_dir / "screening_results" / screening_date.strftime("%Y/%m/%d"),
+                self.output_dir
+                / "screening_results"
+                / screening_date.strftime("%Y/%m/%d"),
                 daily_count,
                 file_prefix=f"screening_{screening_date.strftime('%Y%m%d')}",
                 screening_date=screening_date,
@@ -245,7 +263,9 @@ def main():
     parser.add_argument("--env", choices=["dev", "test", "prod"], default="dev")
     parser.add_argument("--output", default="./generated_data")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--workers", type=int, default=1, help="Parallel workers (future use)")
+    parser.add_argument(
+        "--workers", type=int, default=1, help="Parallel workers (future use)"
+    )
     parser.add_argument(
         "--issue-profile",
         choices=["clean", "dev", "test", "prod_realistic", "stress"],
@@ -255,7 +275,9 @@ def main():
     args = parser.parse_args()
 
     orchestrator = DataOrchestrator(
-        env=args.env, output_dir=args.output, seed=args.seed,
+        env=args.env,
+        output_dir=args.output,
+        seed=args.seed,
         issue_profile=args.issue_profile,
     )
     orchestrator.generate_all()

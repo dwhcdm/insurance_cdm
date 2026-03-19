@@ -39,15 +39,49 @@ class CounterpartyGenerator(BaseGenerator):
     ENTITY_TYPE_WEIGHTS = [0.45, 0.25, 0.05, 0.15, 0.10]
 
     INDUSTRY_SECTORS = [
-        "OIL_AND_GAS", "SHIPPING", "MINING", "AGRICULTURE",
-        "FINANCIAL_SERVICES", "PETROCHEMICALS", "METALS_TRADING",
-        "POWER_UTILITIES", "GOVERNMENT", "MANUFACTURING",
+        "OIL_AND_GAS",
+        "SHIPPING",
+        "MINING",
+        "AGRICULTURE",
+        "FINANCIAL_SERVICES",
+        "PETROCHEMICALS",
+        "METALS_TRADING",
+        "POWER_UTILITIES",
+        "GOVERNMENT",
+        "MANUFACTURING",
     ]
 
     ALL_COUNTRIES = [
-        "US", "GB", "DE", "FR", "JP", "CN", "SG", "AE", "CH", "NL",
-        "NO", "BR", "IN", "KR", "AU", "CA", "SA", "QA", "KW", "OM",
-        "MY", "TH", "ID", "RU", "TR", "ZA", "NG", "EG", "HK", "MT",
+        "US",
+        "GB",
+        "DE",
+        "FR",
+        "JP",
+        "CN",
+        "SG",
+        "AE",
+        "CH",
+        "NL",
+        "NO",
+        "BR",
+        "IN",
+        "KR",
+        "AU",
+        "CA",
+        "SA",
+        "QA",
+        "KW",
+        "OM",
+        "MY",
+        "TH",
+        "ID",
+        "RU",
+        "TR",
+        "ZA",
+        "NG",
+        "EG",
+        "HK",
+        "MT",
     ] + sanctions_config.HIGH_RISK_COUNTRIES
 
     # Shell company jurisdiction hotspots
@@ -73,7 +107,9 @@ class CounterpartyGenerator(BaseGenerator):
         self._burst_remaining: int = 0
         self._burst_address: str | None = None
 
-    def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
+    def generate_batch(
+        self, batch_size: int, batch_offset: int = 0, **kwargs
+    ) -> pd.DataFrame:
         """Generate a batch of counterparty records with production-grade issues."""
         records = []
 
@@ -92,7 +128,8 @@ class CounterpartyGenerator(BaseGenerator):
                 self._burst_remaining = burst["num_entities"] - 1
                 self._burst_address = (
                     np.random.choice(self.SHELL_ADDRESSES)
-                    if burst["same_address"] else None
+                    if burst["same_address"]
+                    else None
                 )
                 country = self._recent_burst_jurisdiction
 
@@ -115,7 +152,11 @@ class CounterpartyGenerator(BaseGenerator):
             )
 
             num_aliases = np.random.choice([0, 1, 2, 3], p=[0.40, 0.30, 0.20, 0.10])
-            aliases = [self.fake.company() for _ in range(num_aliases)] if num_aliases > 0 else []
+            aliases = (
+                [self.fake.company() for _ in range(num_aliases)]
+                if num_aliases > 0
+                else []
+            )
 
             # -- Name variation injection -----------------------------
             if aliases and np.random.random() < 0.15:
@@ -141,8 +182,7 @@ class CounterpartyGenerator(BaseGenerator):
                 )
 
             legal_name = (
-                self.fake.company() if entity_type != "INDIVIDUAL"
-                else self.fake.name()
+                self.fake.company() if entity_type != "INDIVIDUAL" else self.fake.name()
             )
 
             # -- Name variation in legal_name for some records --------
@@ -161,27 +201,37 @@ class CounterpartyGenerator(BaseGenerator):
                 "entity_type": entity_type,
                 "country_of_incorporation": country,
                 "country_of_domicile": (
-                    country if np.random.random() < 0.80
+                    country
+                    if np.random.random() < 0.80
                     else np.random.choice(self.ALL_COUNTRIES)
                 ),
                 "registration_number": (
                     self.fake.bothify(text="REG-####-????")
-                    if entity_type != "INDIVIDUAL" else None
+                    if entity_type != "INDIVIDUAL"
+                    else None
                 ),
                 "lei_code": (
                     self.fake.bothify(text="####00??????????##")
-                    if entity_type in ("CORPORATE", "BANK") and np.random.random() < 0.70
+                    if entity_type in ("CORPORATE", "BANK")
+                    and np.random.random() < 0.70
                     else None
                 ),
                 "swift_bic": (
                     self.fake.bothify(text="????GB2L###")
-                    if entity_type == "BANK" else None
+                    if entity_type == "BANK"
+                    else None
                 ),
-                "tax_id": self.fake.bothify(text="??#########") if np.random.random() < 0.80 else None,
+                "tax_id": self.fake.bothify(text="??#########")
+                if np.random.random() < 0.80
+                else None,
                 "address_line_1": address,
-                "address_line_2": self.fake.secondary_address() if np.random.random() < 0.30 else None,
+                "address_line_2": self.fake.secondary_address()
+                if np.random.random() < 0.30
+                else None,
                 "city": self.fake.city(),
-                "state_province": self.fake.state() if np.random.random() < 0.60 else None,
+                "state_province": self.fake.state()
+                if np.random.random() < 0.60
+                else None,
                 "postal_code": self.fake.postcode(),
                 "industry_sector": np.random.choice(self.INDUSTRY_SECTORS),
                 "risk_rating": risk_rating,
@@ -190,7 +240,9 @@ class CounterpartyGenerator(BaseGenerator):
                 "alias_names": json.dumps(aliases) if aliases else None,
                 "registration_date": reg_date,
                 "last_kyc_review_date": kyc_date,
-                "source_system": np.random.choice(["KYC_PORTAL", "REFINITIV", "MANUAL", "API_FEED"]),
+                "source_system": np.random.choice(
+                    ["KYC_PORTAL", "REFINITIV", "MANUAL", "API_FEED"]
+                ),
                 "_loaded_at": datetime.now(),
             }
 
@@ -199,13 +251,23 @@ class CounterpartyGenerator(BaseGenerator):
                 record,
                 record_id=record_id,
                 nullable_fields=[
-                    "registration_number", "lei_code", "swift_bic", "tax_id",
-                    "address_line_2", "state_province", "alias_names",
-                    "city", "postal_code", "industry_sector",
+                    "registration_number",
+                    "lei_code",
+                    "swift_bic",
+                    "tax_id",
+                    "address_line_2",
+                    "state_province",
+                    "alias_names",
+                    "city",
+                    "postal_code",
+                    "industry_sector",
                 ],
                 text_fields=[
-                    "legal_name", "address_line_1", "city",
-                    "state_province", "postal_code",
+                    "legal_name",
+                    "address_line_1",
+                    "city",
+                    "state_province",
+                    "postal_code",
                 ],
                 json_fields=["alias_names"],
                 enum_fields={
@@ -213,11 +275,20 @@ class CounterpartyGenerator(BaseGenerator):
                     "risk_rating": ["VERY_HIGH", "PROHIBITED", "UNRATED", "PENDING"],
                     "source_system": ["LEGACY_MAINFRAME", "UNKNOWN", "EXCEL_UPLOAD"],
                 },
-                mutable_fields=["legal_name", "address_line_1", "city", "country_of_domicile"],
+                mutable_fields=[
+                    "legal_name",
+                    "address_line_1",
+                    "city",
+                    "country_of_domicile",
+                ],
                 contradictions=[
                     ("is_sanctioned", True, "risk_rating", "LOW"),
-                    ("is_pep", True, "last_kyc_review_date",
-                     self.fake.date_between(start_date="-6y", end_date="-3y")),
+                    (
+                        "is_pep",
+                        True,
+                        "last_kyc_review_date",
+                        self.fake.date_between(start_date="-6y", end_date="-3y"),
+                    ),
                 ],
             )
 

@@ -34,13 +34,23 @@ class ScreeningResultGenerator(BaseGenerator):
     """Generate sanctions screening result records linked to trades."""
 
     MATCH_TYPES = [
-        "EXACT_NAME", "FUZZY_NAME", "ALIAS_MATCH", "ADDRESS_MATCH",
-        "ID_NUMBER_MATCH", "VESSEL_NAME", "VESSEL_IMO", "COUNTRY_MATCH",
+        "EXACT_NAME",
+        "FUZZY_NAME",
+        "ALIAS_MATCH",
+        "ADDRESS_MATCH",
+        "ID_NUMBER_MATCH",
+        "VESSEL_NAME",
+        "VESSEL_IMO",
+        "COUNTRY_MATCH",
     ]
 
     DISPOSITIONS = [
-        "TRUE_POSITIVE", "FALSE_POSITIVE", "ESCALATED",
-        "PENDING_REVIEW", "CLOSED_NO_ACTION", "SAR_FILED",
+        "TRUE_POSITIVE",
+        "FALSE_POSITIVE",
+        "ESCALATED",
+        "PENDING_REVIEW",
+        "CLOSED_NO_ACTION",
+        "SAR_FILED",
     ]
 
     # SLA thresholds by risk level (hours)
@@ -51,17 +61,25 @@ class ScreeningResultGenerator(BaseGenerator):
         "LOW": 168,
     }
 
-    def __init__(self, seed: int = 42, trade_ids: list = None,
-                 counterparty_ids: list = None,
-                 issue_rates: IssueInjectionRates | None = None):
+    def __init__(
+        self,
+        seed: int = 42,
+        trade_ids: list = None,
+        counterparty_ids: list = None,
+        issue_rates: IssueInjectionRates | None = None,
+    ):
         super().__init__(seed)
         self.trade_ids = trade_ids or [f"TR{i:012d}" for i in range(912_500_000)]
-        self.counterparty_ids = counterparty_ids or [f"CP{i:010d}" for i in range(5_000_000)]
+        self.counterparty_ids = counterparty_ids or [
+            f"CP{i:010d}" for i in range(5_000_000)
+        ]
         self.sanctioned_entity_ids = [f"SE{i:010d}" for i in range(250_000)]
         self.injector = DataQualityIssueInjector(issue_rates, seed)
         self.scenario_gen = SanctionsScenarioGenerator(seed)
 
-    def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
+    def generate_batch(
+        self, batch_size: int, batch_offset: int = 0, **kwargs
+    ) -> pd.DataFrame:
         """Generate a batch of screening result records with production-grade issues."""
         screening_date = kwargs.get("screening_date", datetime.now().date())
 
@@ -72,16 +90,20 @@ class ScreeningResultGenerator(BaseGenerator):
         fp_storm_trade = None
         if np.random.random() < 0.01:
             fp_storm_entity = np.random.choice(
-                self.sanctioned_entity_ids[:min(len(self.sanctioned_entity_ids), 50_000)]
+                self.sanctioned_entity_ids[
+                    : min(len(self.sanctioned_entity_ids), 50_000)
+                ]
             )
             fp_storm_trade = np.random.choice(
-                self.trade_ids[:min(len(self.trade_ids), 1_000_000)]
+                self.trade_ids[: min(len(self.trade_ids), 1_000_000)]
             )
 
         for i in range(batch_size):
             idx = batch_offset + i
             record_id = f"SCR{idx:012d}"
-            trade_id = np.random.choice(self.trade_ids[:min(len(self.trade_ids), 1_000_000)])
+            trade_id = np.random.choice(
+                self.trade_ids[: min(len(self.trade_ids), 1_000_000)]
+            )
 
             # Orphan trade FK - 0.8%
             if np.random.random() < 0.008:
@@ -89,7 +111,9 @@ class ScreeningResultGenerator(BaseGenerator):
 
             # Inject false positive storm records
             sanctioned_entity_id = np.random.choice(
-                self.sanctioned_entity_ids[:min(len(self.sanctioned_entity_ids), 50_000)]
+                self.sanctioned_entity_ids[
+                    : min(len(self.sanctioned_entity_ids), 50_000)
+                ]
             )
             if fp_storm_entity and np.random.random() < 0.15:
                 sanctioned_entity_id = fp_storm_entity
@@ -107,7 +131,8 @@ class ScreeningResultGenerator(BaseGenerator):
                     sanctions_config.EXACT_MATCH_PERCENTAGE,
                     sanctions_config.HIGH_MATCH_PERCENTAGE,
                     sanctions_config.MEDIUM_MATCH_PERCENTAGE,
-                    1.0 - sanctions_config.EXACT_MATCH_PERCENTAGE
+                    1.0
+                    - sanctions_config.EXACT_MATCH_PERCENTAGE
                     - sanctions_config.HIGH_MATCH_PERCENTAGE
                     - sanctions_config.MEDIUM_MATCH_PERCENTAGE,
                 ],
@@ -167,7 +192,9 @@ class ScreeningResultGenerator(BaseGenerator):
                 elif risk_level == "HIGH":
                     resolution_hours = round(np.random.lognormal(mean=3, sigma=1.0), 2)
                 else:
-                    resolution_hours = round(np.random.lognormal(mean=1.5, sigma=0.5), 2)
+                    resolution_hours = round(
+                        np.random.lognormal(mean=1.5, sigma=0.5), 2
+                    )
                 resolution_ts = screening_ts + timedelta(hours=resolution_hours)
 
             # SLA breach injection: resolution exceeds SLA threshold - 3%
@@ -186,27 +213,35 @@ class ScreeningResultGenerator(BaseGenerator):
             # Missing analyst on resolved case - 0.5%
             analyst_id = (
                 f"ANL{np.random.randint(1, 200):04d}"
-                if disposition != "PENDING_REVIEW" else None
+                if disposition != "PENDING_REVIEW"
+                else None
             )
             if analyst_id and np.random.random() < 0.005:
                 analyst_id = None
 
-            match_details = json.dumps({
-                "matched_fields": np.random.choice(
-                    [["name"], ["name", "country"], ["name", "address"],
-                     ["name", "id_number"], ["vessel_name", "imo"]],
-                ).tolist(),
-                "confidence": match_score,
-                "screening_engine": np.random.choice(
-                    ["FIRCO", "ACTIMIZE", "REFINITIV_WC1", "CUSTOM"]
-                ),
-            })
+            match_details = json.dumps(
+                {
+                    "matched_fields": np.random.choice(
+                        [
+                            ["name"],
+                            ["name", "country"],
+                            ["name", "address"],
+                            ["name", "id_number"],
+                            ["vessel_name", "imo"],
+                        ],
+                    ).tolist(),
+                    "confidence": match_score,
+                    "screening_engine": np.random.choice(
+                        ["FIRCO", "ACTIMIZE", "REFINITIV_WC1", "CUSTOM"]
+                    ),
+                }
+            )
 
             record = {
                 "screening_id": record_id,
                 "trade_id": trade_id,
                 "counterparty_id": np.random.choice(
-                    self.counterparty_ids[:min(len(self.counterparty_ids), 100_000)]
+                    self.counterparty_ids[: min(len(self.counterparty_ids), 100_000)]
                 ),
                 "sanctioned_entity_id": sanctioned_entity_id,
                 "screening_timestamp": screening_ts,
@@ -219,18 +254,26 @@ class ScreeningResultGenerator(BaseGenerator):
                 "analyst_id": analyst_id,
                 "analyst_notes": (
                     self.fake.sentence(nb_words=12)
-                    if disposition != "PENDING_REVIEW" else None
+                    if disposition != "PENDING_REVIEW"
+                    else None
                 ),
                 "resolution_timestamp": resolution_ts,
                 "resolution_hours": resolution_hours,
                 "is_sla_breach": is_sla_breach,
                 "backlog_hours": backlog_hours,
-                "sanctions_list_matched": np.random.choice(sanctions_config.SANCTIONS_LISTS),
+                "sanctions_list_matched": np.random.choice(
+                    sanctions_config.SANCTIONS_LISTS
+                ),
                 "is_pep_match": np.random.random() < 0.08,
                 "is_adverse_media": np.random.random() < 0.05,
                 "workflow_id": f"WF{np.random.randint(1, 10000):06d}",
                 "source_system": np.random.choice(
-                    ["FIRCO_CONTINUITY", "ACTIMIZE_SAM", "REFINITIV_WC1", "CUSTOM_ENGINE"]
+                    [
+                        "FIRCO_CONTINUITY",
+                        "ACTIMIZE_SAM",
+                        "REFINITIV_WC1",
+                        "CUSTOM_ENGINE",
+                    ]
                 ),
                 "_loaded_at": datetime.now(),
             }
@@ -240,8 +283,11 @@ class ScreeningResultGenerator(BaseGenerator):
                 record,
                 record_id=record_id,
                 nullable_fields=[
-                    "analyst_id", "analyst_notes", "resolution_timestamp",
-                    "resolution_hours", "backlog_hours",
+                    "analyst_id",
+                    "analyst_notes",
+                    "resolution_timestamp",
+                    "resolution_hours",
+                    "backlog_hours",
                 ],
                 text_fields=["analyst_notes", "match_details"],
                 timestamp_field="screening_timestamp",
@@ -258,7 +304,9 @@ class ScreeningResultGenerator(BaseGenerator):
                     "source_system": ["LEGACY_V1", "UNKNOWN_ENGINE", "MANUAL"],
                 },
                 mutable_fields=[
-                    "trade_id", "counterparty_id", "sanctioned_entity_id",
+                    "trade_id",
+                    "counterparty_id",
+                    "sanctioned_entity_id",
                     "analyst_id",
                 ],
                 contradictions=[

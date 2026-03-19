@@ -33,30 +33,74 @@ class VesselGenerator(BaseGenerator):
     """Generate vessel master data with realistic maritime attributes and BAU issues."""
 
     VESSEL_TYPES = {
-        "VLCC":             {"dwt_min": 200_000, "dwt_max": 320_000},
-        "SUEZMAX":          {"dwt_min": 120_000, "dwt_max": 200_000},
-        "AFRAMAX":          {"dwt_min": 80_000,  "dwt_max": 120_000},
-        "PANAMAX":          {"dwt_min": 60_000,  "dwt_max": 80_000},
-        "MR_TANKER":        {"dwt_min": 25_000,  "dwt_max": 55_000},
-        "LNG_CARRIER":      {"dwt_min": 50_000,  "dwt_max": 100_000},
-        "BULK_CARRIER":     {"dwt_min": 30_000,  "dwt_max": 200_000},
-        "CONTAINER":        {"dwt_min": 10_000,  "dwt_max": 200_000},
-        "GENERAL_CARGO":    {"dwt_min": 5_000,   "dwt_max": 30_000},
-        "CHEMICAL":         {"dwt_min": 5_000,   "dwt_max": 50_000},
+        "VLCC": {"dwt_min": 200_000, "dwt_max": 320_000},
+        "SUEZMAX": {"dwt_min": 120_000, "dwt_max": 200_000},
+        "AFRAMAX": {"dwt_min": 80_000, "dwt_max": 120_000},
+        "PANAMAX": {"dwt_min": 60_000, "dwt_max": 80_000},
+        "MR_TANKER": {"dwt_min": 25_000, "dwt_max": 55_000},
+        "LNG_CARRIER": {"dwt_min": 50_000, "dwt_max": 100_000},
+        "BULK_CARRIER": {"dwt_min": 30_000, "dwt_max": 200_000},
+        "CONTAINER": {"dwt_min": 10_000, "dwt_max": 200_000},
+        "GENERAL_CARGO": {"dwt_min": 5_000, "dwt_max": 30_000},
+        "CHEMICAL": {"dwt_min": 5_000, "dwt_max": 50_000},
     }
 
     # Open registry / flag of convenience states weighted higher
     FLAG_STATES = [
-        "PA", "LR", "MH", "HK", "SG", "BS", "MT", "CY",
-        "GB", "NO", "GR", "JP", "CN", "KR", "US", "DE",
-        "DK", "IT", "IN", "TR", "SA", "AE", "MY", "ID",
-        "RU", "IR",
+        "PA",
+        "LR",
+        "MH",
+        "HK",
+        "SG",
+        "BS",
+        "MT",
+        "CY",
+        "GB",
+        "NO",
+        "GR",
+        "JP",
+        "CN",
+        "KR",
+        "US",
+        "DE",
+        "DK",
+        "IT",
+        "IN",
+        "TR",
+        "SA",
+        "AE",
+        "MY",
+        "ID",
+        "RU",
+        "IR",
     ]
     FLAG_WEIGHTS = [
-        0.12, 0.10, 0.10, 0.08, 0.06, 0.05, 0.05, 0.04,
-        0.04, 0.04, 0.03, 0.03, 0.03, 0.02, 0.02, 0.02,
-        0.02, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.01,
-        0.03, 0.03,
+        0.12,
+        0.10,
+        0.10,
+        0.08,
+        0.06,
+        0.05,
+        0.05,
+        0.04,
+        0.04,
+        0.04,
+        0.03,
+        0.03,
+        0.03,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.01,
+        0.01,
+        0.01,
+        0.01,
+        0.03,
+        0.03,
     ]
 
     SANCTIONED_FLAGS = {"IR", "KP", "SY", "RU", "CU", "VE"}
@@ -65,19 +109,40 @@ class VesselGenerator(BaseGenerator):
     FLAG_HOP_FLAGS = ["PA", "LR", "MH", "BS", "MT", "CY", "KM", "TZ", "TG", "CM"]
 
     CLASS_SOCIETIES = [
-        "LLOYD'S_REGISTER", "DNV", "BUREAU_VERITAS", "ABS",
-        "CLASS_NK", "RINA", "KR", "CCS", "IRS",
+        "LLOYD'S_REGISTER",
+        "DNV",
+        "BUREAU_VERITAS",
+        "ABS",
+        "CLASS_NK",
+        "RINA",
+        "KR",
+        "CCS",
+        "IRS",
     ]
 
     BUILDERS = [
-        "HYUNDAI_HEAVY", "SAMSUNG_HEAVY", "DAEWOO",
-        "IMABARI", "OSHIMA", "TSUNEISHI",
-        "CSSC", "COSCO_SHIPPING_HEAVY", "YANGZIJIANG",
+        "HYUNDAI_HEAVY",
+        "SAMSUNG_HEAVY",
+        "DAEWOO",
+        "IMABARI",
+        "OSHIMA",
+        "TSUNEISHI",
+        "CSSC",
+        "COSCO_SHIPPING_HEAVY",
+        "YANGZIJIANG",
     ]
 
     VESSEL_NAME_SUFFIXES = [
-        "STAR", "GLORY", "SPIRIT", "PEARL", "FORTUNE",
-        "PIONEER", "GUARDIAN", "VOYAGER", "HARMONY", "LIBERTY",
+        "STAR",
+        "GLORY",
+        "SPIRIT",
+        "PEARL",
+        "FORTUNE",
+        "PIONEER",
+        "GUARDIAN",
+        "VOYAGER",
+        "HARMONY",
+        "LIBERTY",
     ]
 
     def __init__(self, seed: int = 42, issue_rates: IssueInjectionRates | None = None):
@@ -92,7 +157,9 @@ class VesselGenerator(BaseGenerator):
         self._spoofed_imo_pool: list[str] = []
         self._spoofed_mmsi_pool: list[str] = []
 
-    def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
+    def generate_batch(
+        self, batch_size: int, batch_offset: int = 0, **kwargs
+    ) -> pd.DataFrame:
         """Generate a batch of vessel master records with production-grade issues."""
         records = []
 
@@ -107,8 +174,7 @@ class VesselGenerator(BaseGenerator):
             flag_state = np.random.choice(self.FLAG_STATES, p=self.FLAG_WEIGHTS)
 
             is_flagged = (
-                flag_state in self.SANCTIONED_FLAGS
-                or np.random.random() < 0.03
+                flag_state in self.SANCTIONED_FLAGS or np.random.random() < 0.03
             )
 
             dwt = round(np.random.uniform(specs["dwt_min"], specs["dwt_max"]), 2)
@@ -197,11 +263,17 @@ class VesselGenerator(BaseGenerator):
                 record,
                 record_id=record_id,
                 nullable_fields=[
-                    "call_sign", "class_society", "builder",
-                    "beneficial_owner", "mmsi", "gross_tonnage",
+                    "call_sign",
+                    "class_society",
+                    "builder",
+                    "beneficial_owner",
+                    "mmsi",
+                    "gross_tonnage",
                 ],
                 text_fields=[
-                    "vessel_name", "registered_owner", "beneficial_owner",
+                    "vessel_name",
+                    "registered_owner",
+                    "beneficial_owner",
                     "builder",
                 ],
                 positive_fields=["dwt", "gross_tonnage"],

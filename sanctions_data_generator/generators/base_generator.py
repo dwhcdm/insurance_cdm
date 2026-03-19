@@ -106,7 +106,9 @@ class BaseGenerator(ABC):
         return files
 
     @abstractmethod
-    def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
+    def generate_batch(
+        self, batch_size: int, batch_offset: int = 0, **kwargs
+    ) -> pd.DataFrame:
         """
         Generate a batch of records.
 
