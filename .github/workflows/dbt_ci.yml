@@ -6,7 +6,7 @@ on:
       - 'sanctions_dbt/**'
 
 env:
-  DBT_PROFILES_DIR: ./sanctions_dbt
+  DBT_PROFILES_DIR: .
 
 jobs:
   dbt-lint:

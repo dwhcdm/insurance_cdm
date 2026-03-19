@@ -20,9 +20,7 @@ can be tuned from "clean dev" to "realistic prod chaos".
 import copy
 import json
 import random
-import string
-import unicodedata
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -427,7 +425,7 @@ class DataQualityIssueInjector:
             pos = random.randint(0, max(len(value) - 1, 0))
             return value[:pos] + "�" + value[pos + 1:]
         elif strategy == "latin1_artifact":
-            artifacts = ["Ã¤", "Ã¶", "Ã¼", "Ã©", "Ã±", "â€™", "â€"", "Â£", "Â©"]
+            artifacts = ["\xc3\xa4", "\xc3\xb6", "\xc3\xbc", "\xc3\xa9", "\xc3\xb1", "\xe2\x80\x99", "\xe2\x80\x93", "\xc2\xa3", "\xc2\xa9"]
             return value + random.choice(artifacts)
         elif strategy == "double_encode":
             try:

@@ -13,7 +13,6 @@ Usage:
 import argparse
 import json
 import logging
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 

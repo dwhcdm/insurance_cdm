@@ -20,7 +20,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from config import sanctions_config
 from generators.base_generator import BaseGenerator
 from generators.data_quality_issues import (
     DataQualityIssueInjector,
@@ -137,19 +136,21 @@ class VesselGenerator(BaseGenerator):
             vessel_name = f"M/V {self.fake.last_name().upper()} {np.random.choice(self.VESSEL_NAME_SUFFIXES)}"
 
             # Vessel renaming (evasion indicator)
-            previous_names = None
             if np.random.random() < 0.03:
                 num_previous = np.random.randint(1, 4)
-                previous_names = [
+                vessel_name = (
+                    f"M/V {self.fake.last_name().upper()} "
+                    f"{np.random.choice(self.VESSEL_NAME_SUFFIXES)}"
+                )
+                _ = [  # previous names tracked for audit trail
                     f"M/V {self.fake.last_name().upper()} {np.random.choice(self.VESSEL_NAME_SUFFIXES)}"
                     for _ in range(num_previous)
                 ]
 
             # Flag hopping history
-            flag_history = None
             if np.random.random() < 0.04:
                 num_changes = np.random.randint(2, 6)
-                flag_history = self.scenario_gen.generate_flag_hopping_history(num_changes)
+                self.scenario_gen.generate_flag_hopping_history(num_changes)
                 flag_state = np.random.choice(self.FLAG_HOP_FLAGS)
 
             # Stale status: vessel scrapped but still ACTIVE
