@@ -58,6 +58,27 @@ class DataVolumeConfig:
 
 
 @dataclass
+class IssueInjectionConfig:
+    """
+    Controls the level of production-grade data quality issues injected
+    into generated data.  Maps to IssueInjectionRates presets.
+
+    Profiles:
+        clean          – zero issues (unit-test baselines)
+        dev            – ≈1 % affected records
+        test           – ≈3 % affected (default for QA)
+        prod_realistic – ≈5 % affected (mirrors real production noise)
+        stress         – ≈15 % affected (chaos / resilience testing)
+    """
+
+    profile: str = "test"
+
+    # Override individual rates (applied on top of profile).
+    # Keys must match IssueInjectionRates field names.
+    overrides: dict = field(default_factory=dict)
+
+
+@dataclass
 class SanctionsConfig:
     """Reference data for sanctions screening simulation."""
 
@@ -129,5 +150,6 @@ class CommodityConfig:
 # Module-level singleton instances
 snowflake_config = SnowflakeConfig()
 volume_config = DataVolumeConfig()
+issue_config = IssueInjectionConfig()
 sanctions_config = SanctionsConfig()
 commodity_config = CommodityConfig()

@@ -17,7 +17,8 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from config import volume_config
+from config import issue_config, volume_config
+from generators.data_quality_issues import IssueInjectionRates
 from generators.counterparty_generator import CounterpartyGenerator
 from generators.sanctions_list_generator import SanctionsListGenerator
 from generators.screening_generator import ScreeningResultGenerator
@@ -42,14 +43,46 @@ class DataOrchestrator:
         "prod": 1.0,                             # Full scale
     }
 
-    def __init__(self, env: str, output_dir: str, seed: int = 42):
+    def __init__(self, env: str, output_dir: str, seed: int = 42,
+                 issue_profile: str | None = None):
         self.env = env
         self.multiplier = self.ENV_MULTIPLIERS[env]
         self.output_dir = Path(output_dir)
         self.seed = seed
-        self.manifest = {"environment": env, "generated_at": datetime.now().isoformat(), "files": {}}
 
-        logger.info(f"Initializing data orchestrator: env={env}, multiplier={self.multiplier}")
+        # Resolve issue injection profile
+        profile = issue_profile or issue_config.profile
+        self.issue_rates = self._resolve_issue_rates(profile)
+
+        self.manifest = {
+            "environment": env,
+            "issue_profile": profile,
+            "generated_at": datetime.now().isoformat(),
+            "files": {},
+        }
+
+        logger.info(
+            f"Initializing data orchestrator: env={env}, "
+            f"multiplier={self.multiplier}, issue_profile={profile}"
+        )
+
+    @staticmethod
+    def _resolve_issue_rates(profile: str) -> IssueInjectionRates:
+        """Map a profile name to an IssueInjectionRates instance."""
+        profiles = {
+            "clean": IssueInjectionRates.clean,
+            "dev": IssueInjectionRates.dev,
+            "test": IssueInjectionRates.test,
+            "prod_realistic": IssueInjectionRates.prod_realistic,
+            "stress": IssueInjectionRates.stress,
+        }
+        factory = profiles.get(profile)
+        if factory is None:
+            raise ValueError(
+                f"Unknown issue profile '{profile}'. "
+                f"Choose from: {', '.join(profiles)}"
+            )
+        return factory()
 
     def _scale(self, count: int) -> int:
         """Apply environment multiplier and ensure at least 10 records."""
@@ -60,7 +93,7 @@ class DataOrchestrator:
         logger.info("=== Generating dimension data ===")
 
         # Counterparties
-        gen = CounterpartyGenerator(seed=self.seed)
+        gen = CounterpartyGenerator(seed=self.seed, issue_rates=self.issue_rates)
         count = self._scale(volume_config.COUNTERPARTIES)
         logger.info(f"Generating {count:,} counterparty records...")
         files = gen.generate_to_parquet(
@@ -72,7 +105,7 @@ class DataOrchestrator:
         }
 
         # Sanctions lists
-        gen = SanctionsListGenerator(seed=self.seed + 1)
+        gen = SanctionsListGenerator(seed=self.seed + 1, issue_rates=self.issue_rates)
         count = self._scale(volume_config.SANCTIONED_ENTITIES)
         logger.info(f"Generating {count:,} sanctions list entries...")
         files = gen.generate_to_parquet(
@@ -84,7 +117,7 @@ class DataOrchestrator:
         }
 
         # Vessels
-        gen = VesselGenerator(seed=self.seed + 2)
+        gen = VesselGenerator(seed=self.seed + 2, issue_rates=self.issue_rates)
         count = self._scale(volume_config.VESSELS)
         logger.info(f"Generating {count:,} vessel records...")
         files = gen.generate_to_parquet(
@@ -102,7 +135,7 @@ class DataOrchestrator:
 
         logger.info(f"=== Generating trade data: {daily_count:,}/day x {days} days ===")
 
-        gen = TradeGenerator(seed=self.seed + 3)
+        gen = TradeGenerator(seed=self.seed + 3, issue_rates=self.issue_rates)
         all_files = []
 
         for day_offset in range(days):
@@ -132,7 +165,7 @@ class DataOrchestrator:
 
         logger.info(f"=== Generating vessel movements: {daily_count:,}/day x {days} days ===")
 
-        gen = VesselMovementGenerator(seed=self.seed + 4)
+        gen = VesselMovementGenerator(seed=self.seed + 4, issue_rates=self.issue_rates)
         all_files = []
 
         for day_offset in range(days):
@@ -164,7 +197,7 @@ class DataOrchestrator:
 
         logger.info(f"=== Generating screening results: {daily_count:,}/day x {days} days ===")
 
-        gen = ScreeningResultGenerator(seed=self.seed + 5)
+        gen = ScreeningResultGenerator(seed=self.seed + 5, issue_rates=self.issue_rates)
         all_files = []
 
         for day_offset in range(days):
@@ -214,9 +247,18 @@ def main():
     parser.add_argument("--output", default="./generated_data")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--workers", type=int, default=1, help="Parallel workers (future use)")
+    parser.add_argument(
+        "--issue-profile",
+        choices=["clean", "dev", "test", "prod_realistic", "stress"],
+        default=None,
+        help="Data quality issue injection profile (default: from config)",
+    )
     args = parser.parse_args()
 
-    orchestrator = DataOrchestrator(env=args.env, output_dir=args.output, seed=args.seed)
+    orchestrator = DataOrchestrator(
+        env=args.env, output_dir=args.output, seed=args.seed,
+        issue_profile=args.issue_profile,
+    )
     orchestrator.generate_all()
 
 

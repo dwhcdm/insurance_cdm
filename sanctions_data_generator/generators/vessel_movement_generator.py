@@ -5,6 +5,16 @@ Generates realistic AIS vessel position data at MASSIVE scale
 (10M records/day target). Simulates voyages between major ports
 with dark activity periods, sanctioned zone proximity, and
 ship-to-ship transfer indicators.
+
+Production-grade BAU issues injected:
+    - AIS spoofing / position manipulation (GPS offset, impossible speed)
+    - Extended dark activity (transponder off for days, not hours)
+    - Ship-to-ship (STS) transfers in known hotspots
+    - Temporal drift across AIS source systems (satellite vs terrestrial lag)
+    - Duplicate AIS messages from multiple receivers
+    - Impossible navigation (speed > 25kts for tanker, lat/lon out of range)
+    - Zone risk score anomalies (vessel near sanctioned zone but score = 0)
+    - Stale position data replayed from cache
 """
 
 from datetime import datetime, timedelta
@@ -13,6 +23,11 @@ import numpy as np
 import pandas as pd
 
 from generators.base_generator import BaseGenerator
+from generators.data_quality_issues import (
+    DataQualityIssueInjector,
+    IssueInjectionRates,
+    SanctionsScenarioGenerator,
+)
 
 
 class VesselMovementGenerator(BaseGenerator):
@@ -48,11 +63,24 @@ class VesselMovementGenerator(BaseGenerator):
         "TARTUS", "NAMPO", "KOZMINO",
     ]
 
-    def __init__(self, seed: int = 42, vessel_ids: list = None):
+    # Known STS transfer hotspot zones (lat, lon, radius_deg)
+    STS_HOTSPOTS = [
+        (36.0, 15.0, 2.0),    # Mediterranean off Malta
+        (25.0, 56.0, 1.5),    # Fujairah anchorage
+        (1.0, 104.0, 1.0),    # Singapore Strait
+        (-6.0, 106.0, 1.5),   # Java Sea
+        (10.0, -61.0, 1.0),   # Trinidad and Tobago
+        (37.0, 26.0, 1.5),    # Aegean Sea / Kalamata
+    ]
+
+    def __init__(self, seed: int = 42, vessel_ids: list = None,
+                 issue_rates: IssueInjectionRates | None = None):
         super().__init__(seed)
         self.vessel_ids = vessel_ids or [f"VS{i:010d}" for i in range(500_000)]
         self.port_names = list(self.PORTS.keys())
         self.port_coords = list(self.PORTS.values())
+        self.injector = DataQualityIssueInjector(issue_rates, seed)
+        self.scenario_gen = SanctionsScenarioGenerator(seed)
 
     def _simulate_voyage(self, origin: str, destination: str, num_points: int) -> list:
         """Simulate a voyage path between two ports with realistic movement."""
@@ -98,13 +126,14 @@ class VesselMovementGenerator(BaseGenerator):
 
     def generate_batch(self, batch_size: int, batch_offset: int = 0, **kwargs) -> pd.DataFrame:
         """
-        Generate vessel movement AIS data.
+        Generate vessel movement AIS data with production-grade issues.
         Optimized for high-volume generation.
         """
         movement_date = kwargs.get("movement_date", datetime.now().date())
 
         records = []
         remaining = batch_size
+        sts_injected = False
 
         while remaining > 0:
             vessel_id = np.random.choice(self.vessel_ids)
@@ -124,10 +153,20 @@ class VesselMovementGenerator(BaseGenerator):
             dark_start = np.random.randint(0, max(num_pings - 20, 1)) if has_dark_period else -1
             dark_end = dark_start + np.random.randint(5, 20) if has_dark_period else -1
 
+            # Extended dark activity (days, not hours) - 0.3% chance
+            if np.random.random() < 0.003 and has_dark_period:
+                dark_end = min(dark_start + np.random.randint(50, 200), num_pings - 1)
+
             is_near_sanctioned = (
                 origin in self.SANCTIONED_PORTS
                 or destination in self.SANCTIONED_PORTS
             )
+
+            # STS transfer event injection - 0.5% of voyages
+            sts_event = None
+            if np.random.random() < 0.005 and not sts_injected:
+                sts_event = self.scenario_gen.generate_sts_transfer_event()
+                sts_injected = True
 
             base_time = datetime.combine(movement_date, datetime.min.time())
             time_increment = timedelta(hours=24) / num_pings
@@ -147,11 +186,26 @@ class VesselMovementGenerator(BaseGenerator):
                         (point["latitude"] - port_coords[0]) ** 2
                         + (point["longitude"] - port_coords[1]) ** 2
                     )
-                    if distance < 2.0:  # Within ~200km
+                    if distance < 2.0:
                         zone_risk = max(zone_risk, round(100 - distance * 50, 2))
 
+                # STS indicator: vessel loitering near STS hotspot
+                is_sts = False
+                if sts_event and 0.3 < (j / num_pings) < 0.7:
+                    for hlat, hlon, hradius in self.STS_HOTSPOTS:
+                        dist = np.sqrt(
+                            (point["latitude"] - hlat) ** 2
+                            + (point["longitude"] - hlon) ** 2
+                        )
+                        if dist < hradius:
+                            is_sts = True
+                            point["speed_knots"] = round(np.random.uniform(0.5, 3.0), 1)
+                            break
+
+                record_id = f"MV{batch_offset + len(records):015d}"
+
                 record = {
-                    "movement_id": f"MV{batch_offset + len(records):015d}",
+                    "movement_id": record_id,
                     "vessel_id": vessel_id,
                     "timestamp": timestamp,
                     "latitude": point["latitude"],
@@ -169,6 +223,7 @@ class VesselMovementGenerator(BaseGenerator):
                     ),
                     "zone_risk_score": max(zone_risk, 0),
                     "is_near_sanctioned_zone": is_near_sanctioned or zone_risk > 50,
+                    "is_sts_indicator": is_sts,
                     "ais_message_type": int(np.random.choice(
                         [1, 2, 3, 5, 18, 19],
                         p=[0.30, 0.30, 0.15, 0.10, 0.10, 0.05],
@@ -183,7 +238,46 @@ class VesselMovementGenerator(BaseGenerator):
                     ),
                     "created_at": datetime.now(),
                 }
+
+                # ---- Inject production-grade data quality issues ----
+                record, near_dupe = self.injector.inject_all(
+                    record,
+                    record_id=record_id,
+                    nullable_fields=[
+                        "speed_knots", "heading", "port_of_call",
+                        "dark_duration_hours",
+                    ],
+                    text_fields=["origin_port", "destination_port", "port_of_call"],
+                    timestamp_field="timestamp",
+                    loaded_at_field="created_at",
+                    positive_fields=["speed_knots", "zone_risk_score"],
+                    bounded_fields={
+                        "latitude": (-90.0, 90.0),
+                        "longitude": (-180.0, 180.0),
+                        "heading": (0.0, 360.0),
+                        "speed_knots": (0.0, 50.0),
+                    },
+                    enum_fields={
+                        "navigation_status": ["AIS_OFF", "UNKNOWN", "DRIFTING", "TOWING"],
+                        "source_system": ["MANUAL_REPORT", "RADAR", "UNKNOWN_SOURCE"],
+                    },
+                    mutable_fields=["vessel_id", "origin_port", "destination_port"],
+                    contradictions=[
+                        ("is_dark_activity", True, "speed_knots",
+                         round(np.random.uniform(8, 14), 1)),
+                        ("is_near_sanctioned_zone", True, "zone_risk_score", 0.0),
+                    ],
+                )
+
                 records.append(record)
+
+                # Duplicate AIS message from multiple receivers
+                exact_dupe = self.injector.maybe_create_exact_duplicate(record)
+                if exact_dupe:
+                    records.append(exact_dupe)
+
+                if near_dupe:
+                    records.append(near_dupe)
 
                 if len(records) >= batch_size:
                     break
