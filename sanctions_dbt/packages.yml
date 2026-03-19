@@ -1,0 +1,24 @@
+# ============================================================================
+# DBT Package Dependencies
+# ============================================================================
+
+packages:
+  # Core utility functions (surrogate keys, pivots, etc.)
+  - package: dbt-labs/dbt_utils
+    version: [">=1.1.0", "<2.0.0"]
+
+  # Date dimension generation
+  - package: calogica/dbt_date
+    version: [">=0.10.0", "<1.0.0"]
+
+  # Data quality expectations
+  - package: calogica/dbt_expectations
+    version: [">=0.10.0", "<1.0.0"]
+
+  # Snowflake-specific utilities
+  - package: dbt-labs/dbt_external_tables
+    version: [">=0.9.0", "<1.0.0"]
+
+  # Code quality and documentation
+  - package: dbt-labs/codegen
+    version: [">=0.12.0", "<1.0.0"]

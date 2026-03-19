@@ -1,0 +1,88 @@
+# ============================================================================
+# Snowflake Schema Deployment Pipeline
+# Deploys SQL scripts to Snowflake environments.
+# Manual trigger with environment selection.
+# ============================================================================
+
+name: Snowflake Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+      scripts:
+        description: 'Scripts to run (comma-separated, e.g., 001,002,003 or "all")'
+        required: true
+        default: 'all'
+      dry_run:
+        description: 'Dry run (validate only, do not execute)'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+  SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.32-linux_x86_64.bash
+          SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.32-linux_x86_64.bash
+
+      - name: Validate SQL syntax
+        run: |
+          pip install sqlfluff
+          sqlfluff lint snowflake/ --dialect snowflake
+
+      - name: Deploy scripts
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        run: |
+          SCRIPTS="${{ github.event.inputs.scripts }}"
+          ENV="${{ github.event.inputs.environment }}"
+
+          if [ "$SCRIPTS" = "all" ]; then
+            for script in snowflake/0*.sql; do
+              echo "Executing: $script"
+              ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER \
+                -d "SANCTIONS_$(echo $ENV | tr '[:lower:]' '[:upper:]')" \
+                -f "$script" --option exit_on_error=true
+            done
+          else
+            IFS=',' read -ra SCRIPT_NUMS <<< "$SCRIPTS"
+            for num in "${SCRIPT_NUMS[@]}"; do
+              script="snowflake/${num}*.sql"
+              echo "Executing: $script"
+              ~/bin/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER \
+                -d "SANCTIONS_$(echo $ENV | tr '[:lower:]' '[:upper:]')" \
+                -f $script --option exit_on_error=true
+            done
+          fi
+
+      - name: Dry run summary
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          echo "DRY RUN - No scripts were executed."
+          echo "Scripts that would be deployed:"
+          ls -la snowflake/0*.sql

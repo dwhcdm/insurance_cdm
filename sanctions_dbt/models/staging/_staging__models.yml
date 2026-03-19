@@ -1,0 +1,128 @@
+version: 2
+
+models:
+  - name: stg_counterparties
+    description: "Staged counterparty data - cleansed and typed"
+    columns:
+      - name: counterparty_id
+        description: "Primary identifier for counterparty"
+        tests:
+          - unique
+          - not_null
+      - name: legal_name
+        description: "Legal entity name"
+        tests:
+          - not_null
+      - name: country_of_incorporation
+        description: "ISO country code of incorporation"
+        tests:
+          - not_null
+          - valid_country_code
+      - name: risk_rating
+        description: "KYC risk rating"
+        tests:
+          - accepted_values:
+              values: ['HIGH', 'MEDIUM', 'LOW']
+      - name: is_pep
+        description: "Politically Exposed Person flag"
+        tests:
+          - not_null
+
+  - name: stg_sanctions_lists
+    description: "Staged sanctions list data"
+    columns:
+      - name: sanctioned_entity_id
+        description: "Primary identifier for sanctioned entity"
+        tests:
+          - unique
+          - not_null
+      - name: entity_name
+        description: "Name of sanctioned entity"
+        tests:
+          - not_null
+      - name: sanctions_list
+        description: "Source sanctions list"
+        tests:
+          - not_null
+      - name: is_active
+        description: "Whether entity is currently sanctioned"
+        tests:
+          - not_null
+
+  - name: stg_vessels
+    description: "Staged vessel master data"
+    columns:
+      - name: vessel_id
+        tests:
+          - unique
+          - not_null
+      - name: imo_number
+        description: "IMO vessel identification number"
+        tests:
+          - unique
+          - not_null
+      - name: flag_state
+        description: "Flag state country code"
+        tests:
+          - not_null
+          - valid_country_code
+
+  - name: stg_trades
+    description: "Staged trade transactions"
+    columns:
+      - name: trade_id
+        tests:
+          - not_null
+      - name: trade_date
+        tests:
+          - not_null
+      - name: total_value_usd
+        tests:
+          - not_null
+          - not_negative
+      - name: quantity_mt
+        tests:
+          - not_negative
+      - name: sanctions_risk_score
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+  - name: stg_vessel_movements
+    description: "Staged AIS vessel movement data"
+    columns:
+      - name: movement_id
+        tests:
+          - not_null
+      - name: vessel_id
+        tests:
+          - not_null
+      - name: latitude
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -90
+              max_value: 90
+      - name: longitude
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -180
+              max_value: 180
+
+  - name: stg_screening_results
+    description: "Staged sanctions screening results"
+    columns:
+      - name: screening_id
+        tests:
+          - unique
+          - not_null
+      - name: match_score
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+      - name: disposition
+        tests:
+          - accepted_values:
+              values: ['TRUE_POSITIVE', 'FALSE_POSITIVE', 'ESCALATED',
+                       'PENDING_REVIEW', 'CLOSED_NO_ACTION', 'SAR_FILED']

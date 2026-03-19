@@ -1,0 +1,147 @@
+# ============================================================================
+# DBT Project Configuration
+# Commodity Trading Sanctions Risk Analytics Platform
+# ============================================================================
+
+name: 'sanctions_platform'
+version: '1.0.0'
+config-version: 2
+
+profile: 'sanctions_platform'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+docs-paths: ["docs"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Require dbt version
+require-dbt-version: [">=1.7.0", "<2.0.0"]
+
+# Variables
+vars:
+  # Date spine range
+  start_date: '2015-01-01'
+  end_date: '2035-12-31'
+  # Sanctions screening threshold
+  sanctions_match_threshold: 0.85
+  # Environment flag
+  is_production: "{{ target.name == 'prod' }}"
+
+# Quoting
+quoting:
+  database: false
+  schema: false
+  identifier: false
+
+# Dispatch config for package overrides
+dispatch:
+  - macro_namespace: dbt_utils
+    search_order: ['sanctions_platform', 'dbt_utils']
+
+# ============================================================================
+# MODEL CONFIGURATIONS
+# ============================================================================
+models:
+  sanctions_platform:
+    # Global defaults
+    +materialized: view
+    +on_schema_change: "append_new_columns"
+    +persist_docs:
+      relation: true
+      columns: true
+
+    # Staging layer (Bronze -> Silver)
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags: ['staging', 'daily']
+      +meta:
+        layer: 'bronze'
+        owner: 'data_engineering'
+
+    # Intermediate layer (Silver - ephemeral CTEs)
+    intermediate:
+      +materialized: ephemeral
+      +schema: curated
+      +tags: ['intermediate', 'daily']
+      +meta:
+        layer: 'silver'
+        owner: 'data_engineering'
+
+    # Marts - Core (Facts & Dimensions -> Gold)
+    marts:
+      core:
+        +materialized: table
+        +schema: analytics
+        +tags: ['marts', 'core', 'daily']
+        +post-hook:
+          - "{{ grant_select_on_schemas(schemas=['analytics'], role='SANCTIONS_ANALYST') }}"
+        +meta:
+          layer: 'gold'
+          owner: 'data_engineering'
+
+      # Marts - Derived (Aggregates)
+      derived:
+        +materialized: incremental
+        +schema: derived
+        +tags: ['marts', 'derived', 'daily']
+        +incremental_strategy: merge
+        +meta:
+          layer: 'gold'
+          owner: 'data_engineering'
+
+    # ML Features
+    ml_features:
+      +materialized: table
+      +schema: ml
+      +tags: ['ml', 'weekly']
+      +meta:
+        layer: 'ml'
+        owner: 'data_science'
+
+# ============================================================================
+# SEED CONFIGURATIONS
+# ============================================================================
+seeds:
+  sanctions_platform:
+    +schema: raw
+    +quote_columns: false
+    seed_country_codes:
+      +column_types:
+        country_code: varchar(3)
+        country_name: varchar(100)
+        region: varchar(100)
+        sub_region: varchar(100)
+    seed_commodity_codes:
+      +column_types:
+        commodity_code: varchar(20)
+        commodity_name: varchar(200)
+        commodity_group: varchar(50)
+        hs_code: varchar(20)
+        unit_of_measure: varchar(10)
+
+# ============================================================================
+# SNAPSHOT CONFIGURATIONS
+# ============================================================================
+snapshots:
+  sanctions_platform:
+    +target_schema: curated
+    +strategy: timestamp
+    +invalidate_hard_deletes: true
+    +tags: ['snapshot', 'daily']
+
+# ============================================================================
+# TEST CONFIGURATIONS
+# ============================================================================
+tests:
+  sanctions_platform:
+    +severity: warn
+    +tags: ['data_quality']

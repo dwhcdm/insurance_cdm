@@ -1,0 +1,113 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw data landing zone - Bronze layer"
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'SANCTIONS_DEV') }}"
+    schema: RAW
+    loader: "Snowpipe / COPY INTO"
+
+    freshness:
+      warn_after: {count: 12, period: hour}
+      error_after: {count: 24, period: hour}
+    loaded_at_field: _loaded_at
+
+    tags: ['raw', 'source']
+
+    tables:
+      - name: raw_counterparties
+        description: "Raw counterparty/entity data from KYC systems"
+        identifier: RAW_COUNTERPARTIES
+        columns:
+          - name: counterparty_id
+            description: "Source system counterparty identifier"
+            tests:
+              - not_null
+              - unique
+          - name: legal_name
+            tests:
+              - not_null
+          - name: country_of_incorporation
+            tests:
+              - not_null
+          - name: risk_rating
+            tests:
+              - accepted_values:
+                  values: ['HIGH', 'MEDIUM', 'LOW']
+
+      - name: raw_sanctions_lists
+        description: "Raw sanctions list data from OFAC/EU/UN"
+        identifier: RAW_SANCTIONS_LISTS
+        freshness:
+          warn_after: {count: 6, period: hour}
+          error_after: {count: 12, period: hour}
+        columns:
+          - name: entity_id
+            tests:
+              - not_null
+              - unique
+          - name: entity_name
+            tests:
+              - not_null
+          - name: sanctions_list
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['OFAC_SDN', 'OFAC_CONS', 'EU_SANCTIONS', 'UN_SANCTIONS',
+                           'UK_SANCTIONS', 'OFAC_SSI', 'BIS_ENTITY', 'BIS_DENIED']
+
+      - name: raw_vessels
+        description: "Raw vessel master data"
+        identifier: RAW_VESSELS
+        columns:
+          - name: vessel_id
+            tests:
+              - not_null
+              - unique
+          - name: imo_number
+            tests:
+              - not_null
+              - unique
+
+      - name: raw_trades
+        description: "Raw trade transactions - BILLIONS scale"
+        identifier: RAW_TRADES
+        freshness:
+          warn_after: {count: 1, period: hour}
+          error_after: {count: 4, period: hour}
+        columns:
+          - name: trade_id
+            tests:
+              - not_null
+          - name: trade_date
+            tests:
+              - not_null
+          - name: total_value_usd
+            tests:
+              - not_null
+
+      - name: raw_vessel_movements
+        description: "Raw AIS vessel movement data - BILLIONS scale"
+        identifier: RAW_VESSEL_MOVEMENTS
+        freshness:
+          warn_after: {count: 1, period: hour}
+          error_after: {count: 6, period: hour}
+        columns:
+          - name: movement_id
+            tests:
+              - not_null
+          - name: vessel_id
+            tests:
+              - not_null
+
+      - name: raw_screening_results
+        description: "Raw sanctions screening results"
+        identifier: RAW_SCREENING_RESULTS
+        columns:
+          - name: screening_id
+            tests:
+              - not_null
+              - unique
+          - name: trade_id
+            tests:
+              - not_null

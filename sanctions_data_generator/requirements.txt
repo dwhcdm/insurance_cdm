@@ -1,0 +1,36 @@
+# Sanctions Risk Analytics Platform - Data Generator Dependencies
+
+# Snowflake connectivity
+snowflake-connector-python>=3.6.0
+snowflake-snowpark-python>=1.11.0
+
+# Data generation
+faker>=22.0.0
+pandas>=2.1.0
+numpy>=1.26.0
+pyarrow>=14.0.0
+
+# Progress tracking
+tqdm>=4.66.0
+
+# Environment configuration
+python-dotenv>=1.0.0
+
+# DBT (for transformation layer)
+dbt-snowflake>=1.7.0
+
+# SQL linting
+sqlfluff>=3.0.0
+sqlfluff-templater-dbt>=3.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Type checking
+mypy>=1.8.0
+pandas-stubs>=2.1.0
+
+# Code formatting
+black>=24.0.0
+ruff>=0.2.0
