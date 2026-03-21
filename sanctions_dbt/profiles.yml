@@ -1,0 +1,41 @@
+sanctions_platform:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: SANCTIONS_DATA_ENGINEER
+      database: SANCTIONS_DEV
+      warehouse: SANCTIONS_TRANSFORM_WH_XS
+      schema: RAW
+      threads: 4
+      client_session_keep_alive: true
+      query_tag: 'dbt_dev'
+
+    test:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: SANCTIONS_DATA_ENGINEER
+      database: SANCTIONS_TEST
+      warehouse: SANCTIONS_TRANSFORM_WH_XS
+      schema: RAW
+      threads: 8
+      client_session_keep_alive: true
+      query_tag: 'dbt_test'
+
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: SANCTIONS_DBT_RUNNER
+      database: SANCTIONS_PROD
+      warehouse: SANCTIONS_TRANSFORM_WH_M
+      schema: RAW
+      threads: 16
+      client_session_keep_alive: true
+      query_tag: 'dbt_prod'

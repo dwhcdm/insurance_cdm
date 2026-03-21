@@ -1,0 +1,17 @@
+program_code,program_name,administering_body,description,is_active
+OFAC_SDN,OFAC Specially Designated Nationals,US Treasury OFAC,Primary US sanctions list of blocked persons and entities,TRUE
+OFAC_CONS,OFAC Consolidated Sanctions List,US Treasury OFAC,Consolidated list of all OFAC sanctions lists,TRUE
+OFAC_SSI,OFAC Sectoral Sanctions,US Treasury OFAC,Sectoral sanctions targeting specific industries,TRUE
+EU_SANCTIONS,EU Consolidated Financial Sanctions,European Commission,EU financial sanctions targeting persons and entities,TRUE
+UN_SANCTIONS,UN Security Council Consolidated List,United Nations,UNSC consolidated sanctions list,TRUE
+UK_SANCTIONS,UK Financial Sanctions,HM Treasury UK,UK autonomous financial sanctions list,TRUE
+BIS_ENTITY,BIS Entity List,US Commerce BIS,Export control restrictions on foreign entities,TRUE
+BIS_DENIED,BIS Denied Persons List,US Commerce BIS,Persons denied export privileges,TRUE
+IRAN_PROG,Iran Sanctions Program,Multi-lateral,Sanctions related to Iran nuclear program,TRUE
+NK_PROG,North Korea Sanctions Program,Multi-lateral,Sanctions related to North Korea WMD program,TRUE
+RUSSIA_PROG,Russia/Ukraine Sanctions,Multi-lateral,Sanctions related to Russia-Ukraine conflict,TRUE
+SYRIA_PROG,Syria Sanctions Program,Multi-lateral,Sanctions related to Syrian conflict,TRUE
+CUBA_PROG,Cuba Sanctions Program,US Treasury OFAC,Comprehensive sanctions on Cuba,TRUE
+VENEZUELA_PROG,Venezuela Sanctions Program,US Treasury OFAC,Sanctions targeting Venezuelan government,TRUE
+BELARUS_PROG,Belarus Sanctions Program,Multi-lateral,Sanctions targeting Belarus regime,TRUE
+MYANMAR_PROG,Myanmar Sanctions Program,Multi-lateral,Sanctions targeting Myanmar military,TRUE

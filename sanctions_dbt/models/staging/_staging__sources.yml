@@ -1,0 +1,122 @@
+version: 2
+
+sources:
+  - name: raw
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'SANCTIONS_DEV') }}"
+    schema: raw
+    description: "Raw data landing zone - Bronze layer"
+    loader: snowpipe
+    loaded_at_field: _loaded_at
+
+    freshness:
+      warn_after: {count: 12, period: hour}
+      error_after: {count: 24, period: hour}
+
+    tables:
+      - name: raw_counterparties
+        description: "Raw counterparty/entity data from KYC systems (5M records)"
+        columns:
+          - name: counterparty_id
+            description: "Unique counterparty identifier"
+            tests:
+              - not_null
+              - unique
+          - name: legal_name
+            tests: [not_null]
+          - name: entity_type
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['CORPORATE', 'INDIVIDUAL', 'GOVERNMENT', 'BANK', 'TRADER']
+          - name: country_of_incorporation
+            tests: [not_null]
+          - name: risk_rating
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['HIGH', 'MEDIUM', 'LOW']
+
+      - name: raw_sanctions_lists
+        description: "Raw sanctions list data from OFAC/EU/UN/UK sources (250K records)"
+        freshness:
+          warn_after: {count: 6, period: hour}
+          error_after: {count: 12, period: hour}
+        columns:
+          - name: entity_id
+            tests: [not_null, unique]
+          - name: entity_name
+            tests: [not_null]
+          - name: entity_type
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['INDIVIDUAL', 'ENTITY', 'VESSEL', 'AIRCRAFT']
+          - name: sanctions_list
+            tests: [not_null]
+          - name: listed_date
+            tests: [not_null]
+
+      - name: raw_vessels
+        description: "Raw vessel master data including ownership (500K records)"
+        columns:
+          - name: vessel_id
+            tests: [not_null, unique]
+          - name: imo_number
+            tests: [not_null]
+          - name: vessel_name
+            tests: [not_null]
+          - name: vessel_type
+            tests: [not_null]
+          - name: flag_state
+            tests: [not_null]
+
+      - name: raw_trades
+        description: "Raw trade transactions - 2.5M records per day (912.5M/year)"
+        columns:
+          - name: trade_id
+            tests: [not_null, unique]
+          - name: trade_timestamp
+            tests: [not_null]
+          - name: trade_date
+            tests: [not_null]
+          - name: trade_type
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['PHYSICAL', 'PAPER', 'SWAP', 'OPTION', 'FUTURE']
+          - name: trade_status
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['CONFIRMED', 'PENDING', 'SETTLED', 'CANCELLED']
+          - name: total_value_usd
+            tests: [not_null]
+
+      - name: raw_vessel_movements
+        description: "Raw AIS vessel movement data - 10M records per day (3.65B/year)"
+        columns:
+          - name: movement_id
+            tests: [not_null, unique]
+          - name: vessel_id
+            tests: [not_null]
+          - name: timestamp
+            tests: [not_null]
+          - name: latitude
+            tests: [not_null]
+          - name: longitude
+            tests: [not_null]
+
+      - name: raw_screening_results
+        description: "Raw sanctions screening results (136.9M/year)"
+        columns:
+          - name: screening_id
+            tests: [not_null, unique]
+          - name: trade_id
+            tests: [not_null]
+          - name: screening_timestamp
+            tests: [not_null]
+          - name: screening_type
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['PRE_TRADE', 'POST_TRADE', 'PERIODIC', 'EVENT_DRIVEN']

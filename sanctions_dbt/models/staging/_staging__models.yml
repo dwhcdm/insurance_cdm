@@ -1,0 +1,65 @@
+version: 2
+
+models:
+  - name: stg_counterparties
+    description: "Cleansed counterparty data with standardised types and trimmed text fields"
+    columns:
+      - name: counterparty_id
+        tests: [not_null, unique]
+      - name: risk_rating
+        tests:
+          - accepted_values:
+              values: ['HIGH', 'MEDIUM', 'LOW']
+
+  - name: stg_sanctions_lists
+    description: "Cleansed sanctions list data with parsed JSON fields and active flag"
+    columns:
+      - name: entity_id
+        tests: [not_null, unique]
+
+  - name: stg_vessels
+    description: "Cleansed vessel master data with typed numeric fields"
+    columns:
+      - name: vessel_id
+        tests: [not_null, unique]
+
+  - name: stg_trades
+    description: "Cleansed trade transaction data with typed financial measures"
+    columns:
+      - name: trade_id
+        tests: [not_null, unique]
+      - name: total_value_usd
+        tests:
+          - not_null
+          - not_negative
+
+  - name: stg_vessel_movements
+    description: "Cleansed AIS vessel movement data with typed coordinates"
+    columns:
+      - name: movement_id
+        tests: [not_null, unique]
+      - name: latitude
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -90
+              max_value: 90
+      - name: longitude
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -180
+              max_value: 180
+
+  - name: stg_screening_results
+    description: "Cleansed screening result data with parsed match details"
+    columns:
+      - name: screening_id
+        tests: [not_null, unique]
+      - name: match_score
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+      - name: disposition
+        tests:
+          - accepted_values:
+              values: ['TRUE_POSITIVE', 'FALSE_POSITIVE', 'ESCALATED', 'PENDING_REVIEW', 'CLOSED_NO_ACTION', 'SAR_FILED']

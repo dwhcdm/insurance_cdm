@@ -1,0 +1,61 @@
+name: DBT CI
+
+on:
+  pull_request:
+    paths:
+      - 'sanctions_dbt/**'
+
+env:
+  DBT_PROFILES_DIR: .
+
+jobs:
+  dbt-lint:
+    name: SQLFluff Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install sqlfluff sqlfluff-templater-dbt dbt-snowflake
+
+      - name: Install dbt packages
+        working-directory: sanctions_dbt
+        run: dbt deps
+
+      - name: Lint SQL models
+        working-directory: sanctions_dbt
+        run: |
+          sqlfluff lint models/ --dialect snowflake || true
+        continue-on-error: true
+
+  dbt-compile:
+    name: DBT Compile Check
+    runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ci_dummy_account
+      SNOWFLAKE_USER: ci_dummy_user
+      SNOWFLAKE_PASSWORD: ci_dummy_password
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt-snowflake
+        run: pip install dbt-snowflake==1.7.*
+
+      - name: Install dbt packages
+        working-directory: sanctions_dbt
+        run: dbt deps
+
+      - name: Parse and validate models
+        working-directory: sanctions_dbt
+        run: dbt parse
