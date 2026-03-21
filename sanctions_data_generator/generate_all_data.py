@@ -24,6 +24,7 @@ from generators.screening_generator import ScreeningResultGenerator
 from generators.trade_generator import TradeGenerator
 from generators.vessel_generator import VesselGenerator
 from generators.vessel_movement_generator import VesselMovementGenerator
+from generators.snowpipe_challenges import SnowpipeChallengeSimulator
 
 logging.basicConfig(
     level=logging.INFO,
@@ -246,9 +247,11 @@ class DataOrchestrator:
         self.generate_trade_data()
         self.generate_vessel_movement_data()
         self.generate_screening_data()
+        self.generate_snowpipe_challenges()
 
         elapsed = (datetime.now() - start).total_seconds()
         self.manifest["elapsed_seconds"] = elapsed
+        self.manifest["snowpipe_challenges_included"] = True
 
         manifest_path = self.output_dir / "manifest.json"
         with open(manifest_path, "w") as f:
@@ -256,6 +259,20 @@ class DataOrchestrator:
 
         logger.info(f"Generation complete in {elapsed:.1f}s. Manifest: {manifest_path}")
         return manifest_path
+
+    def generate_snowpipe_challenges(self) -> None:
+        """Generate Snowpipe challenge scenarios (introduce + correction files)."""
+        logger.info("=== Generating Snowpipe challenge scenarios ===")
+
+        simulator = SnowpipeChallengeSimulator(seed=self.seed + 100)
+        challenge_manifest = simulator.generate_all_challenges(
+            self.output_dir / "snowpipe_challenges"
+        )
+
+        self.manifest["snowpipe_challenges"] = {
+            "total_challenges": challenge_manifest["total_challenges"],
+            "output_dir": str(self.output_dir / "snowpipe_challenges"),
+        }
 
 
 def main():

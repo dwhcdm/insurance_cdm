@@ -21,6 +21,10 @@ from generators.vessel_generator import VesselGenerator
 from generators.vessel_movement_generator import VesselMovementGenerator
 from generators.trade_generator import TradeGenerator
 from generators.screening_generator import ScreeningResultGenerator
+from generators.snowpipe_challenges import (
+    SnowpipeChallengeConfig,
+    SnowpipeChallengeSimulator,
+)
 
 __all__ = [
     "BaseGenerator",
@@ -34,4 +38,6 @@ __all__ = [
     "IssueInjectionRates",
     "NameVariationGenerator",
     "SanctionsScenarioGenerator",
+    "SnowpipeChallengeConfig",
+    "SnowpipeChallengeSimulator",
 ]
